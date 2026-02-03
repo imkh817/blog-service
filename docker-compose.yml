@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: blog-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+    command: ["redis-server", "--appendonly", "yes"] # 데이터 영속성 AOF 활성화
+
+  # 2. MySQL 서비스
+  db:
+    image: mysql:8.0
+    container_name: blog-mysql
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_DATABASE: blog_db
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d # 초기 스키마 자동 생성을 위한 볼륨
+    command: --default-authentication-plugin=mysql_native_password  # 이 줄 추가
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10

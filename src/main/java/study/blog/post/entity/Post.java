@@ -1,0 +1,98 @@
+package study.blog.post.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import study.blog.post.enums.PostStatus;
+import study.blog.post.exception.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.GenerationType.IDENTITY;
+import static lombok.AccessLevel.PROTECTED;
+import static org.springframework.util.StringUtils.hasText;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = PROTECTED)
+public class Post {
+
+    @Id @GeneratedValue(strategy = IDENTITY)
+    private Long id;
+
+    private Long authorId;
+
+    private String title;
+
+    @Lob
+    private String content;
+
+    @Enumerated(EnumType.STRING)
+    private PostStatus postStatus;
+
+    private long viewCount;
+
+    @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
+    private List<PostTag> tags = new ArrayList<>();
+
+    public static Post createPost(Long authorId, String title, String content, PostStatus postStatus, List<String> tagNames){
+        validateTitle(title);
+        validateContent(content);
+        validatePostStatus(postStatus);
+        validateTagNames(tagNames);
+
+        Post post = new Post();
+        post.authorId = authorId;
+        post.title = title;
+        post.content = content;
+        post.postStatus = postStatus;
+        post.viewCount = 0L;
+        post.addTags(tagNames);
+        return post;
+    }
+
+    private void addTags(List<String> tagNames){
+        if(tagNames.isEmpty()) return;
+
+        tagNames.stream()
+                .distinct()
+                .forEach(name -> tags.add(PostTag.createPostTag(name, this)));
+    }
+
+    private static void validateTagNames(List<String> tags){
+        if(tags.isEmpty()){
+            throw new EmptyTagException("태그는 최소 1개 이상 등록해야 합니다.");
+        }
+        if(tags.size() > 10){
+            throw new TooManyTagsException("태그는 최대 10개까지만 등록할 수 있습니다.");
+        }
+    }
+
+    private static void validateTitle(String title){
+        if(!hasText(title)){
+            throw new InValidPostTitleException("제목은 필수입니다.");
+        }
+
+        if(title.length() > 100){
+            throw new InValidPostTitleException("제목은 최대 100자까지 가능합니다");
+        }
+    }
+
+    private static void validateContent(String content){
+        if(!hasText(content)){
+            throw new InValidPostContentException("본문은 필수입니다.");
+        }
+    }
+
+    private static void validatePostStatus(PostStatus postStatus){
+        if(postStatus == null){
+            throw new InValidPostStatusException("게시글 상태는 필수입니다.");
+        }
+
+        if(!(PostStatus.DRAFT.equals(postStatus) || PostStatus.PUBLISHED.equals(postStatus))){
+            throw new InValidPostStatusException("게시글 상태는 임시 저장 또는 발행 상태여야 합니다.");
+        }
+    }
+}
