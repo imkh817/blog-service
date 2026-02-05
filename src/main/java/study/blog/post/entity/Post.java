@@ -53,6 +53,24 @@ public class Post {
         return post;
     }
 
+    public void modifyPost(String title, String content, PostStatus postStatus, List<String> tags){
+        validateTitle(title);
+        validateContent(content);
+        validatePostStatus(postStatus);
+        validateTagNames(tags);
+
+        this.title = title;
+        this.content = content;
+        this.postStatus = postStatus;
+        modifyTags(tags);
+
+    }
+
+    private void modifyTags(List<String> tags){
+        this.tags.clear();
+        addTags(tags);
+    }
+
     private void addTags(List<String> tagNames){
         if(tagNames.isEmpty()) return;
 
@@ -91,8 +109,43 @@ public class Post {
             throw new InValidPostStatusException("게시글 상태는 필수입니다.");
         }
 
-        if(!(PostStatus.DRAFT.equals(postStatus) || PostStatus.PUBLISHED.equals(postStatus))){
+        if(PostStatus.DELETED.equals(postStatus)){
             throw new InValidPostStatusException("게시글 상태는 임시 저장 또는 발행 상태여야 합니다.");
         }
+    }
+
+    public void validatePostStatusToHide(PostStatus status){
+        if(status.equals(PostStatus.PUBLISHED)){
+            throw new InValidPostStatusException("게시글이 발행 상태인 경우에만 숨김 처리 가능합니다.");
+        }
+
+        if(status.equals(PostStatus.HIDDEN)){
+            throw new InValidPostStatusException("이미 숨김 처리 상태인 게시글입니다.");
+        }
+    }
+
+    public void validatePostStatusToPublish(PostStatus status){
+        if(!(status.equals(PostStatus.HIDDEN) || status.equals(PostStatus.DRAFT))){
+            throw new InValidPostStatusException("게시할 수 없는 상태입니다.");
+        }
+    }
+
+
+    public void publish() {
+        validatePostStatusToPublish(this.postStatus);
+        this.postStatus = PostStatus.PUBLISHED;
+    }
+
+    public void draft() {
+        this.postStatus = PostStatus.DRAFT;
+    }
+
+    public void hide() {
+        validatePostStatusToHide(postStatus);
+        this.postStatus = PostStatus.HIDDEN;
+    }
+
+    public void delete(){
+        this.postStatus = PostStatus.DELETED;
     }
 }

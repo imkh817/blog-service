@@ -1,6 +1,5 @@
 package study.blog.post.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PostService 유스케이스 테스트")
-class PostServiceTest {
+class CreatePostServiceTest {
 
     @InjectMocks
     private PostService postService;

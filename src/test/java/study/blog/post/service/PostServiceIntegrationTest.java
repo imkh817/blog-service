@@ -1,15 +1,15 @@
 package study.blog.post.service;
 
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
+import study.blog.post.dto.UpdatePostDto;
 import study.blog.post.entity.Post;
 import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.*;
@@ -24,14 +24,43 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
+@Transactional
 @SpringBootTest
-class CreatePostIntegrationTest {
+class PostServiceIntegrationTest {
 
     @Autowired
     private PostService postService;
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    private Post savedPost;
+
+    @BeforeEach
+    void setUp(){
+        Long authorId = 100L;
+        CreatePostDto createPostDto = new CreatePostDto(
+                "테스트 제목(setUp)",
+                "테스트 본문(setUp)",
+                PostStatus.DRAFT,
+                List.of("Note", "Computer", "Watch")
+        );
+
+        Post post = Post.createPost(
+                authorId,
+                createPostDto.title(),
+                createPostDto.content(),
+                createPostDto.postStatus(),
+                createPostDto.tagNames()
+        );
+
+        savedPost = postRepository.save(post);
+        entityManager.flush();
+        entityManager.clear();
+    }
 
     @Test
     @DisplayName("게시글 생성 - 성공")
@@ -58,148 +87,68 @@ class CreatePostIntegrationTest {
     }
 
     @Test
-    @DisplayName("게시글 생성 - 제목이 비어있으면 안된다.")
-    void createPost_WithEmptyTitle(){
-        // given
+    @DisplayName("게시글 수정 - 성공")
+    void modifyPost_Success(){
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
-                null,
+                "테스트 제목",
                 "테스트 본문",
                 PostStatus.DRAFT,
                 List.of("DDD", "Spring", "QueryDSL")
         );
 
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(InValidPostTitleException.class);
-    }
-
-    @Test
-    @DisplayName("게시글 생성 - 본문이 비어있으면 안된다.")
-    void createPost_WithEmptyContent(){
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "테스트 제목",
-                null,
-                PostStatus.DRAFT,
-                List.of("DDD", "Spring", "QueryDSL")
-        );
-
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(InValidPostContentException.class);
-    }
-
-    @Test
-    @DisplayName("게시글 생성 - 게시글 상태가 비어있으면 안된다.")
-    void createPost_WithEmptyStatus(){
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "테스트 제목",
-                "테스트 본문",
-                null,
-                List.of("DDD", "Spring", "QueryDSL")
-        );
-
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(InValidPostStatusException.class);
-    }
-
-    @Test
-    @DisplayName("게시글 생성 - 게시글 상태가 DRAFT 혹은 PUBLISH 여야 한다.")
-    void createPost_WithInvalidStatus(){
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "테스트 제목",
-                "테스트 본문",
-                PostStatus.HIDDEN,
-                List.of("DDD", "Spring", "QueryDSL")
-        );
-
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(InValidPostStatusException.class);
-    }
+        PostResponse savedPost = postService.createPost(authorId, createPostDto);
 
 
-
-    @Test
-    @DisplayName("게시글 생성 - 태그가 비어있으면 안된다.")
-    void createPost_WithEmptyTags() {
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "제목",
-                "본문",
+        entityManager.flush();
+        entityManager.clear();
+        UpdatePostDto updatePostDto = new UpdatePostDto(
+                savedPost.postId(),
+                "테스트 제목(수정)",
+                "테스트 본문(수정)",
                 PostStatus.PUBLISHED,
-                List.of()
+                List.of("Window", "Mac")
         );
 
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(EmptyTagException.class);
+        PostResponse modifiedPost = postService.modifyPost(authorId, updatePostDto);
 
+        entityManager.flush();
+        assertThat(modifiedPost.title()).isEqualTo("테스트 제목(수정)");
+        assertThat(modifiedPost.content()).isEqualTo("테스트 본문(수정)");
+        assertThat(modifiedPost.postStatus()).isEqualTo(PostStatus.PUBLISHED);
+        assertThat(modifiedPost.tags()).containsExactlyInAnyOrder("Window", "Mac");
     }
 
     @Test
-    @DisplayName("게시글 생성 - 중복 태그는 제거된다.")
-    void createPost_WithDuplicateTags() {
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "제목",
-                "본문",
-                PostStatus.PUBLISHED,
-                List.of("Java", "Spring", "Java", "Spring")
-        );
-
-        Post mockPost = Post.createPost(
-                authorId,
-                createPostDto.title(),
-                createPostDto.content(),
-                createPostDto.postStatus(),
-                createPostDto.tagNames()
-        );
-
-        given(postRepository.save(any(Post.class))).willReturn(mockPost);
-
-        // when
-        PostResponse response = postService.createPost(authorId, createPostDto);
-
-        // then
-        assertThat(response).isNotNull();
-        assertThat(response.tags()).hasSize(2);  // 중복 제거됨
-        assertThat(response.tags()).containsExactlyInAnyOrder("Java", "Spring");
-
-        then(postRepository).should(times(1)).save(any(Post.class));
+    @DisplayName("게시글의 상태를 발행으로 변경한다.")
+    void changeStatusToPublish(){
+        PostResponse response = postService.changeStatusToPublish(savedPost.getId());
+        assertThat(response.postStatus()).isEqualTo(PostStatus.PUBLISHED);
+        entityManager.flush();
     }
 
     @Test
-    @DisplayName("게시글 생성 - 태그는 10개를 초과할 수 없다.")
-    void createPost_moreThan10Tags() {
-        // given
-        Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
-                "제목",
-                "본문",
-                PostStatus.PUBLISHED,
-                List.of("Java", "Spring", "Java", "Spring"
-                        ,"QueryDSL", "MyBatis", "Oracle", "MySQL"
-                        , "JPA", "Redis", "RabbitMQ")
-        );
-
-        // when, then
-        assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
-        ).isInstanceOf(TooManyTagsException.class);
+    @DisplayName("게시글의 상태를 임시 저장으로 변경한다.")
+    void changeStatusToDraft(){
+        PostResponse response = postService.changeStatusToDraft(savedPost.getId());
+        assertThat(response.postStatus()).isEqualTo(PostStatus.DRAFT);
+        entityManager.flush();
     }
+
+    @Test
+    @DisplayName("게시글의 상태를 숨김으로 변경한다.")
+    void changeStatusToHidden(){
+        PostResponse response = postService.changeStatusToHidden(savedPost.getId());
+        assertThat(response.postStatus()).isEqualTo(PostStatus.HIDDEN);
+        entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("게시글의 상태를 삭제로 변경한다.")
+    void changeStatusToDelete(){
+        PostResponse response = postService.changeStatusToDelete(savedPost.getId());
+        assertThat(response.postStatus()).isEqualTo(PostStatus.DELETED);
+        entityManager.flush();
+    }
+
 }

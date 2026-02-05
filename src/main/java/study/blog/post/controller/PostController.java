@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import study.blog.global.dto.ApiResponse;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
+import study.blog.post.dto.UpdatePostDto;
 import study.blog.post.service.PostService;
 
 @RestController
@@ -23,4 +24,40 @@ public class PostController {
         PostResponse post = postService.createPost(authorId, createPostDto);
         return ApiResponse.success(post);
     }
+
+    @PutMapping
+    public ApiResponse<PostResponse> modifyPost(@RequestParam Long authorId,
+                                                @Valid @RequestBody UpdatePostDto updatePostDto){
+        PostResponse response = postService.modifyPost(authorId, updatePostDto);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/{postId}/publish")
+    public ApiResponse<PostResponse> changeStatusToPublish(@PathVariable Long postId){
+        PostResponse response = postService.changeStatusToPublish(postId);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/{postId}/draft")
+    public ApiResponse<PostResponse> changeStatusToDraft(@PathVariable Long postId){
+        PostResponse response = postService.changeStatusToDraft(postId);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/{postId}/hide")
+    public ApiResponse<PostResponse> changeStatusToHidden(@PathVariable Long postId){
+        PostResponse response = postService.changeStatusToHidden(postId);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/{postId}/delete")
+    public ApiResponse<PostResponse> changeStatusToDelete(@PathVariable Long postId){
+        PostResponse response = postService.changeStatusToDelete(postId);
+        return ApiResponse.success(response);
+    }
+
+
+
+
+
 }
