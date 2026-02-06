@@ -1,6 +1,5 @@
 package study.blog.post.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,14 +11,13 @@ import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.UpdatePostDto;
 import study.blog.post.entity.Post;
 import study.blog.post.enums.PostStatus;
+import study.blog.post.exception.InValidPostStatusException;
 import study.blog.post.repository.PostRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.awaitility.Awaitility.given;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +37,7 @@ class ModifyPostServiceTest {
     private Long authorId;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         postId = 1L;
         authorId = 100L;
         existingPost = Post.createPost(
@@ -53,12 +51,11 @@ class ModifyPostServiceTest {
 
     @Test
     @DisplayName("게시글 수정 - 성공")
-    void modifyPost(){
+    void modifyPost() {
         UpdatePostDto updatePostDto = new UpdatePostDto(
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
-                PostStatus.PUBLISHED,
                 List.of("Mac", "Window")
         );
 
@@ -68,9 +65,29 @@ class ModifyPostServiceTest {
 
         assertThat(modifiedPost.title()).isEqualTo("테스트 제목(수정)");
         assertThat(modifiedPost.content()).isEqualTo("테스트 본문(수정)");
-        assertThat(modifiedPost.postStatus()).isEqualTo(PostStatus.PUBLISHED);
+        assertThat(modifiedPost.postStatus()).isEqualTo(PostStatus.DRAFT);
         assertThat(modifiedPost.tags()).containsExactlyInAnyOrder("Mac", "Window");
+
         assertThat(existingPost.getTitle()).isEqualTo("테스트 제목(수정)");
         assertThat(existingPost.getContent()).isEqualTo("테스트 본문(수정)");
+    }
+
+    @Test
+    @DisplayName("삭제된 게시글은 수정하지 못한다.")
+    void modifyDeletedPost() {
+        UpdatePostDto updatePostDto = new UpdatePostDto(
+                postId,
+                "테스트 제목(수정)",
+                "테스트 본문(수정)",
+                List.of("Mac", "Window")
+        );
+
+        existingPost.delete();
+
+        when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(existingPost));
+
+        assertThatThrownBy(() -> postService.modifyPost(authorId, updatePostDto))
+                .isInstanceOf(InValidPostStatusException.class)
+                .hasMessageContaining("삭제된 게시글은 수정할 수 없습니다.");
     }
 }

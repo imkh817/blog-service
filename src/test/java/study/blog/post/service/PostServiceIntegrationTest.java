@@ -19,10 +19,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.times;
 
 @Transactional
 @SpringBootTest
@@ -40,12 +36,12 @@ class PostServiceIntegrationTest {
     private Post savedPost;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         Long authorId = 100L;
         CreatePostDto createPostDto = new CreatePostDto(
                 "테스트 제목(setUp)",
                 "테스트 본문(setUp)",
-                PostStatus.DRAFT,
+                PostStatus.PUBLISHED,
                 List.of("Note", "Computer", "Watch")
         );
 
@@ -64,7 +60,7 @@ class PostServiceIntegrationTest {
 
     @Test
     @DisplayName("게시글 생성 - 성공")
-    void createPost_success2(){
+    void createPost() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -88,7 +84,7 @@ class PostServiceIntegrationTest {
 
     @Test
     @DisplayName("게시글 수정 - 성공")
-    void modifyPost_Success(){
+    void modifyPost() {
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
                 "테스트 제목",
@@ -106,7 +102,6 @@ class PostServiceIntegrationTest {
                 savedPost.postId(),
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
-                PostStatus.PUBLISHED,
                 List.of("Window", "Mac")
         );
 
@@ -115,29 +110,31 @@ class PostServiceIntegrationTest {
         entityManager.flush();
         assertThat(modifiedPost.title()).isEqualTo("테스트 제목(수정)");
         assertThat(modifiedPost.content()).isEqualTo("테스트 본문(수정)");
-        assertThat(modifiedPost.postStatus()).isEqualTo(PostStatus.PUBLISHED);
         assertThat(modifiedPost.tags()).containsExactlyInAnyOrder("Window", "Mac");
     }
 
     @Test
     @DisplayName("게시글의 상태를 발행으로 변경한다.")
-    void changeStatusToPublish(){
-        PostResponse response = postService.changeStatusToPublish(savedPost.getId());
+    void changeStatusToPublish() {
+        Long authorId = 1L;
+        CreatePostDto createPostDto = new CreatePostDto(
+                "테스트 제목",
+                "테스트 본문",
+                PostStatus.DRAFT,
+                List.of("DDD", "Spring", "QueryDSL")
+        );
+
+        PostResponse savedPost = postService.createPost(authorId, createPostDto);
+
+        PostResponse response = postService.changeStatusToPublish(savedPost.postId());
         assertThat(response.postStatus()).isEqualTo(PostStatus.PUBLISHED);
         entityManager.flush();
     }
 
-    @Test
-    @DisplayName("게시글의 상태를 임시 저장으로 변경한다.")
-    void changeStatusToDraft(){
-        PostResponse response = postService.changeStatusToDraft(savedPost.getId());
-        assertThat(response.postStatus()).isEqualTo(PostStatus.DRAFT);
-        entityManager.flush();
-    }
 
     @Test
     @DisplayName("게시글의 상태를 숨김으로 변경한다.")
-    void changeStatusToHidden(){
+    void changeStatusToHidden() {
         PostResponse response = postService.changeStatusToHidden(savedPost.getId());
         assertThat(response.postStatus()).isEqualTo(PostStatus.HIDDEN);
         entityManager.flush();
@@ -145,10 +142,27 @@ class PostServiceIntegrationTest {
 
     @Test
     @DisplayName("게시글의 상태를 삭제로 변경한다.")
-    void changeStatusToDelete(){
+    void changeStatusToDelete() {
         PostResponse response = postService.changeStatusToDelete(savedPost.getId());
         assertThat(response.postStatus()).isEqualTo(PostStatus.DELETED);
         entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("삭제된 게시글은 수정하지 못한다.")
+    void modifyDeletedPost() {
+        PostResponse postResponse = postService.changeStatusToDelete(savedPost.getId());
+        entityManager.flush();
+
+        UpdatePostDto updatePostDto = new UpdatePostDto(
+                savedPost.getId(),
+                "테스트 제목(수정)",
+                "테스트 본문(수정)",
+                List.of("Mac", "Window")
+        );
+        assertThatThrownBy(() -> postService.modifyPost(savedPost.getAuthorId(), updatePostDto)
+        ).isInstanceOf(InValidPostStatusException.class)
+                .hasMessageContaining("삭제된 게시글은 수정할 수 없습니다.");
     }
 
 }

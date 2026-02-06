@@ -38,13 +38,7 @@ public class PostController {
         return ApiResponse.success(response);
     }
 
-    @PostMapping("/{postId}/draft")
-    public ApiResponse<PostResponse> changeStatusToDraft(@PathVariable Long postId){
-        PostResponse response = postService.changeStatusToDraft(postId);
-        return ApiResponse.success(response);
-    }
-
-    @PostMapping("/{postId}/hide")
+@PostMapping("/{postId}/hide")
     public ApiResponse<PostResponse> changeStatusToHidden(@PathVariable Long postId){
         PostResponse response = postService.changeStatusToHidden(postId);
         return ApiResponse.success(response);

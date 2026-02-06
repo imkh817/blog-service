@@ -40,7 +40,7 @@ public class Post {
     public static Post createPost(Long authorId, String title, String content, PostStatus postStatus, List<String> tagNames){
         validateTitle(title);
         validateContent(content);
-        validatePostStatus(postStatus);
+        validatePostStatusForCreate(postStatus);
         validateTagNames(tagNames);
 
         Post post = new Post();
@@ -53,15 +53,14 @@ public class Post {
         return post;
     }
 
-    public void modifyPost(String title, String content, PostStatus postStatus, List<String> tags){
+    public void modifyPost(String title, String content, List<String> tags){
+        validateModifiable();
         validateTitle(title);
         validateContent(content);
-        validatePostStatus(postStatus);
         validateTagNames(tags);
 
         this.title = title;
         this.content = content;
-        this.postStatus = postStatus;
         modifyTags(tags);
 
     }
@@ -104,29 +103,56 @@ public class Post {
         }
     }
 
-    private static void validatePostStatus(PostStatus postStatus){
+    private static void validatePostStatusForCreate(PostStatus postStatus){
         if(postStatus == null){
             throw new InValidPostStatusException("게시글 상태는 필수입니다.");
         }
 
-        if(PostStatus.DELETED.equals(postStatus)){
+        if(!(postStatus == PostStatus.PUBLISHED || postStatus == PostStatus.DRAFT)){
             throw new InValidPostStatusException("게시글 상태는 임시 저장 또는 발행 상태여야 합니다.");
         }
     }
 
-    public void validatePostStatusToHide(PostStatus status){
-        if(status.equals(PostStatus.PUBLISHED)){
-            throw new InValidPostStatusException("게시글이 발행 상태인 경우에만 숨김 처리 가능합니다.");
-        }
-
-        if(status.equals(PostStatus.HIDDEN)){
-            throw new InValidPostStatusException("이미 숨김 처리 상태인 게시글입니다.");
+    private void validateModifiable(){
+        if(this.postStatus == PostStatus.DELETED){
+            throw new InValidPostStatusException("삭제된 게시글은 수정할 수 없습니다.");
         }
     }
 
-    public void validatePostStatusToPublish(PostStatus status){
+    /**
+     * 게시글이 PUBLISHED 상태일 때만 HIDE 가능
+     */
+    private void validatePostStatusToHide(PostStatus status){
+        if(status.equals(PostStatus.HIDDEN)){
+            throw new InValidPostStatusException("이미 숨김 처리 상태인 게시글입니다.");
+        }
+
+        if(!status.equals(PostStatus.PUBLISHED)){
+            throw new InValidPostStatusException("게시글이 발행 상태인 경우에만 숨김 처리 가능합니다.");
+        }
+    }
+
+    /**
+     * 게시글이 HIDDEN 또는 DRAFT 상태일 때만 PUBLISH 가능
+     */
+    private void validatePostStatusToPublish(PostStatus status){
+        if(status.equals(PostStatus.PUBLISHED)){
+            throw new InValidPostStatusException("이미 발행 상태인 게시글입니다.");
+        }
+
         if(!(status.equals(PostStatus.HIDDEN) || status.equals(PostStatus.DRAFT))){
             throw new InValidPostStatusException("게시할 수 없는 상태입니다.");
+        }
+    }
+
+
+
+    /**
+     * 게시글이 DELETED 상태가 아니어야 DELETE 가능
+     */
+    private void validatePostStatusToDelete(PostStatus status){
+        if(status.equals(PostStatus.DELETED)){
+            throw new InValidPostStatusException("이미 삭제된 게시글입니다.");
         }
     }
 
@@ -136,16 +162,13 @@ public class Post {
         this.postStatus = PostStatus.PUBLISHED;
     }
 
-    public void draft() {
-        this.postStatus = PostStatus.DRAFT;
-    }
-
-    public void hide() {
-        validatePostStatusToHide(postStatus);
+public void hide() {
+        validatePostStatusToHide(this.postStatus);
         this.postStatus = PostStatus.HIDDEN;
     }
 
     public void delete(){
+        validatePostStatusToDelete(this.postStatus);
         this.postStatus = PostStatus.DELETED;
     }
 }

@@ -40,7 +40,6 @@ public class PostService {
         findPost.modifyPost(
                 updatePostDto.title(),
                 updatePostDto.content(),
-                updatePostDto.postStatus(),
                 updatePostDto.tagNames()
         );
 
@@ -55,15 +54,7 @@ public class PostService {
         return PostResponse.from(post);
     }
 
-    @Transactional
-    public PostResponse changeStatusToDraft(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
-        post.draft();
-        return PostResponse.from(post);
-    }
-
-    @Transactional
+@Transactional
     public PostResponse changeStatusToHidden(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
