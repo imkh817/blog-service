@@ -1,6 +1,7 @@
 package study.blog.post.service;
 
 import jakarta.persistence.EntityManager;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -163,6 +164,17 @@ class PostServiceIntegrationTest {
         assertThatThrownBy(() -> postService.modifyPost(savedPost.getAuthorId(), updatePostDto)
         ).isInstanceOf(InValidPostStatusException.class)
                 .hasMessageContaining("삭제된 게시글은 수정할 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("게시글(단건)을 조회한다.")
+    void findPost(){
+        PostResponse post = postService.findPost(savedPost.getId());
+
+        assertThat(post.title()).isEqualTo("테스트 제목(setUp)");
+        assertThat(post.content()).isEqualTo("테스트 본문(setUp)");
+        assertThat(post.postStatus()).isEqualTo(PostStatus.PUBLISHED);
+        assertThat(post.tags()).containsExactlyInAnyOrder("Note", "Computer", "Watch");
     }
 
 }

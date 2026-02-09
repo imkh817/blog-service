@@ -3,6 +3,7 @@ package study.blog.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import study.blog.global.entity.BaseEntity;
 import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.*;
 
@@ -17,7 +18,7 @@ import static org.springframework.util.StringUtils.hasText;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class Post {
+public class Post extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     private Long id;

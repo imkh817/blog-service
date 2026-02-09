@@ -15,7 +15,7 @@ public record PostResponse(
         List<String> tags
 ) {
     public static PostResponse from(Post post){
-        PostResponse postResponse = new PostResponse(post.getId(),
+        return new PostResponse(post.getId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getPostStatus(),
@@ -25,7 +25,5 @@ public record PostResponse(
                         .map(PostTag::getName)
                         .toList()
                 );
-
-        return postResponse;
     }
 }
