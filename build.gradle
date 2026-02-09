@@ -18,6 +18,10 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	// 테스트 시 Redisson 자동 설정 제외 (테스트에서 Redis 미사용)
+	testImplementation {
+		exclude group: 'org.redisson'
+	}
 }
 
 repositories {
@@ -37,6 +41,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// [Testcontainers - 테스트 환경 분리]
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:mysql'
 
 	// [p6spy - SQL 파라미터 바인딩 로그]
 	implementation 'p6spy:p6spy:3.9.1'
