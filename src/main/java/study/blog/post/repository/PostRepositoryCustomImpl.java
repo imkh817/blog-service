@@ -29,7 +29,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         return queryFactory
                 .select(post)
                 .from(post)
-                .join(post.tags, postTag).fetchJoin()
+                .join(post.tags, postTag)
                 .where(
                         keywordLike(condition.keyword()),
                         tagEq(condition.tagNames()),
