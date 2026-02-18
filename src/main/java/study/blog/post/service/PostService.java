@@ -3,6 +3,8 @@ package study.blog.post.service;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,11 +86,13 @@ public class PostService {
         return PostResponse.from(post);
     }
 
-    public List<PostResponse> searchPostByCondition(PostSearchCondition condition, Pageable pageable) {
+    public Page<PostResponse> searchPostByCondition(PostSearchCondition condition, Pageable pageable) {
         List<Post> posts = postRepository.searchPostByCondition(condition, pageable);
-        return posts.stream()
+        long total = postRepository.countPostByCondition(condition);
+        List<PostResponse> content = posts.stream()
                 .map(PostResponse::from)
                 .toList();
+        return new PageImpl<>(content, pageable, total);
     }
 
     @Transactional

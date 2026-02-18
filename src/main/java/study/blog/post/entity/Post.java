@@ -3,7 +3,7 @@ package study.blog.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import study.blog.global.entity.BaseEntity;
+import study.blog.global.common.entity.BaseEntity;
 import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.*;
 

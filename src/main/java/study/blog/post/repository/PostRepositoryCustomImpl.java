@@ -5,6 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.CollectionUtils;
@@ -48,6 +49,26 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .orderBy(getOrderSpecifiers(pageable))
                 .fetch();
+    }
+
+    @Override
+    public long countPostByCondition(PostSearchCondition condition) {
+        JPAQuery<Long> query = queryFactory.select(post.count()).from(post);
+
+        if (condition.tagNames() != null && !condition.tagNames().isEmpty()) {
+            query.join(post.tags, postTag);
+        }
+
+        return Objects.requireNonNullElse(
+                query.where(
+                        keywordLike(condition.keyword()),
+                        tagIn(condition.tagNames()),
+                        postStatusEq(condition.postStatuses()),
+                        createdAtFrom(condition.createdFrom()),
+                        createdAtTo(condition.createdTo())
+                ).fetchOne(),
+                0L
+        );
     }
 
     private BooleanExpression keywordLike(String keyword) {

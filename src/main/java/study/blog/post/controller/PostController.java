@@ -1,40 +1,41 @@
 package study.blog.post.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import study.blog.global.dto.ApiResponse;
+import study.blog.global.common.dto.ApiResponse;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
 import study.blog.post.dto.UpdatePostDto;
-import study.blog.post.enums.PostStatus;
 import study.blog.post.service.PostService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/api/posts")
+@RequestMapping("/api/v1/posts")
 public class PostController {
 
     private final PostService postService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<PostResponse> createPost(@RequestParam Long authorId,
+    public ApiResponse<PostResponse> createPost(Long memberId,
                                                 @Valid @RequestBody CreatePostDto createPostDto){
-        PostResponse post = postService.createPost(authorId, createPostDto);
+        PostResponse post = postService.createPost(memberId, createPostDto);
         return ApiResponse.success(post);
     }
 
     @PutMapping
-    public ApiResponse<PostResponse> modifyPost(@RequestParam Long authorId,
+    public ApiResponse<PostResponse> modifyPost(Long memberId,
                                                 @Valid @RequestBody UpdatePostDto updatePostDto){
-        PostResponse response = postService.modifyPost(authorId, updatePostDto);
+        PostResponse response = postService.modifyPost(memberId, updatePostDto);
         return ApiResponse.success(response);
     }
 
@@ -64,9 +65,11 @@ public class PostController {
 
     @GetMapping
     public ApiResponse<List<PostResponse>> searchPostByCondition(@ModelAttribute PostSearchCondition condition,
-                                                                 @PageableDefault Pageable pageable){
-        List<PostResponse> postResponses = postService.searchPostByCondition(condition, pageable);
-        return ApiResponse.success(postResponses);
+                                                                 @PageableDefault Pageable pageable,
+                                                                 HttpServletResponse response){
+        Page<PostResponse> page = postService.searchPostByCondition(condition, pageable);
+        response.setHeader("X-Total-Count", String.valueOf(page.getTotalElements()));
+        return ApiResponse.success(page.getContent());
     }
 
     @PostMapping("/burkInsert")

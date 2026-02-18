@@ -1,4 +1,4 @@
-package study.blog.comment.entity.global.config;
+package study.blog.global.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
