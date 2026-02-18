@@ -1,0 +1,58 @@
+<script setup>
+import { ref } from 'vue'
+import { useAuthStore } from '../../stores/auth'
+import CommentForm from './CommentForm.vue'
+
+const props = defineProps({
+  comment: { type: Object, required: true },
+  replies: { type: Array, default: () => [] },
+})
+
+const emit = defineEmits(['reply'])
+const auth = useAuthStore()
+const showReplyForm = ref(false)
+
+function handleReply(content) {
+  emit('reply', { parentId: props.comment.commentId, content })
+  showReplyForm.value = false
+}
+</script>
+
+<template>
+  <div class="py-4">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-medium text-gray-900">사용자 {{ comment.authorId }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          v-if="auth.isLoggedIn"
+          @click="showReplyForm = !showReplyForm"
+          class="text-xs text-gray-500 hover:text-gray-700 cursor-pointer"
+        >
+          답글
+        </button>
+      </div>
+    </div>
+    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ comment.content }}</p>
+
+    <div v-if="showReplyForm" class="mt-3 ml-4">
+      <CommentForm
+        :parent-id="comment.commentId"
+        placeholder="답글을 작성하세요..."
+        @submit="handleReply"
+        @cancel="showReplyForm = false"
+      />
+    </div>
+
+    <div v-if="replies.length > 0" class="ml-8 mt-2 border-l-2 border-gray-100 pl-4">
+      <CommentItem
+        v-for="reply in replies"
+        :key="reply.commentId"
+        :comment="reply"
+        :replies="[]"
+        @reply="(data) => emit('reply', data)"
+      />
+    </div>
+  </div>
+</template>
