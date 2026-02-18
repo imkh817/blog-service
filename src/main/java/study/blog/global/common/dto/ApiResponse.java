@@ -1,4 +1,4 @@
-package study.blog.comment.entity.global.dto;
+package study.blog.global.common.dto;
 
 public record ApiResponse<T>(boolean success, String message, T data) {
 
