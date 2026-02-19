@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import study.blog.global.IntegrationTestSupport;
@@ -81,7 +82,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -99,7 +100,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -117,7 +118,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -135,7 +136,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -156,7 +157,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -174,7 +175,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -192,7 +193,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -214,7 +215,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -235,7 +236,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -261,7 +262,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -285,7 +286,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -301,7 +302,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -323,7 +324,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -340,7 +341,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -358,7 +359,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -375,7 +376,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -392,7 +393,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -413,7 +414,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -431,7 +432,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -449,7 +450,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -478,7 +479,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -500,7 +501,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -522,7 +523,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -543,7 +544,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 2));
 
             // then
@@ -559,9 +560,9 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> firstPage = postService.searchPostByCondition(
+            Page<PostResponse> firstPage = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 2));
-            List<PostResponse> secondPage = postService.searchPostByCondition(
+            Page<PostResponse> secondPage = postService.searchPostByCondition(
                     condition, PageRequest.of(1, 2));
 
             // then
@@ -582,7 +583,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(100, 10));
 
             // then
@@ -603,7 +604,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = postService.searchPostByCondition(
                     condition, PageRequest.of(0, 100));
 
             // then
@@ -625,12 +626,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
-            assertThat(results.get(0).title()).isEqualTo("테스트 코드 작성 전략");
-            assertThat(results.get(results.size() - 1).title()).isEqualTo("Spring 입문 가이드");
+            assertThat(results.getContent().get(0).title()).isEqualTo("테스트 코드 작성 전략");
+            assertThat(results.getContent().get(results.getContent().size() - 1).title()).isEqualTo("Spring 입문 가이드");
         }
 
         @Test
@@ -643,12 +644,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
-            assertThat(results.get(0).title()).isEqualTo("Spring 입문 가이드");
-            assertThat(results.get(results.size() - 1).title()).isEqualTo("테스트 코드 작성 전략");
+            assertThat(results.getContent().get(0).title()).isEqualTo("Spring 입문 가이드");
+            assertThat(results.getContent().get(results.getContent().size() - 1).title()).isEqualTo("테스트 코드 작성 전략");
         }
 
         @Test
@@ -661,7 +662,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "viewCount"));
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -677,12 +678,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "unknownField"));
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
-            assertThat(results.get(0).title()).isEqualTo("테스트 코드 작성 전략");
-            assertThat(results.get(results.size() - 1).title()).isEqualTo("Spring 입문 가이드");
+            assertThat(results.getContent().get(0).title()).isEqualTo("테스트 코드 작성 전략");
+            assertThat(results.getContent().get(results.getContent().size() - 1).title()).isEqualTo("Spring 입문 가이드");
         }
 
         @Test
@@ -695,7 +696,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            List<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(3)
@@ -718,8 +719,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest secondPage = PageRequest.of(1, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            List<PostResponse> firstResults = postService.searchPostByCondition(condition, firstPage);
-            List<PostResponse> secondResults = postService.searchPostByCondition(condition, secondPage);
+            Page<PostResponse> firstResults = postService.searchPostByCondition(condition, firstPage);
+            Page<PostResponse> secondResults = postService.searchPostByCondition(condition, secondPage);
 
             // then
             assertThat(firstResults).hasSize(3)

@@ -1,5 +1,6 @@
 package study.blog.post.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,9 @@ class ModifyPostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private EntityManager entityManager;
 
     private Post existingPost;
 

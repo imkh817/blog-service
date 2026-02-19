@@ -5,7 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,6 +18,8 @@ import study.blog.auth.dto.ReissueResult;
 import study.blog.auth.exception.InvalidRefreshTokenException;
 import study.blog.auth.repository.TokenBlacklistRepository;
 import study.blog.auth.service.AuthService;
+import study.blog.global.config.JpaConfig;
+import study.blog.global.config.SecurityConfig;
 import study.blog.global.security.handler.CustomAccessDeniedHandler;
 import study.blog.global.security.handler.CustomAuthenticationEntryPoint;
 import study.blog.global.security.jwt.JwtTokenProvider;
@@ -25,9 +30,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AuthController.class)
+@WebMvcTest(
+        controllers = AuthController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = JpaConfig.class
+        )
+)
+@Import(SecurityConfig.class)
 @DisplayName("AuthController 슬라이스 테스트")
 class AuthControllerTest {
 
@@ -37,29 +50,29 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
-    @MockBean
+    @MockitoBean
     private TokenBlacklistRepository tokenBlacklistRepository;
 
-    @MockBean
+    @MockitoBean
     private MemberUserDetailsService memberUserDetailsService;
 
-    @MockBean
+    @MockitoBean
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    @MockBean
+    @MockitoBean
     private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     // ===== POST /api/v1/auth/login =====
 
     @Test
-    @DisplayName("유효한 자격증명으로 로그인 시 200과 AccessToken을 반환하고 쿠키를 설정한다")
-    void login_유효한_자격증명_200_응답() throws Exception {
+    @DisplayName("로그인 시 200과 AccessToken을 반환하고 쿠키를 설정한다")
+    void login_200_응답() throws Exception {
         // given
         LoginRequest request = new LoginRequest("test@test.com", "password123");
         MemberResponse memberResponse = new MemberResponse(1L, "test@test.com", "테스터");
@@ -72,6 +85,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").value("access-token"))
@@ -125,7 +139,7 @@ class AuthControllerTest {
 
     @Test
     @DisplayName("유효한 refresh_token 쿠키로 재발급 시 200과 새 AccessToken을 반환한다")
-    void refresh_유효한_쿠키_200_응답() throws Exception {
+    void refresh_200_응답() throws Exception {
         // given
         ReissueResult reissueResult = new ReissueResult("new-access-token", "new-refresh-token");
 

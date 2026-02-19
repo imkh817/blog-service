@@ -9,6 +9,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import study.blog.global.common.dto.ApiResponse;
+import study.blog.global.web.resolver.LoginMember;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
@@ -26,14 +27,14 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<PostResponse> createPost(Long memberId,
+    public ApiResponse<PostResponse> createPost(@LoginMember Long memberId,
                                                 @Valid @RequestBody CreatePostDto createPostDto){
         PostResponse post = postService.createPost(memberId, createPostDto);
         return ApiResponse.success(post);
     }
 
     @PutMapping
-    public ApiResponse<PostResponse> modifyPost(Long memberId,
+    public ApiResponse<PostResponse> modifyPost(@LoginMember Long memberId,
                                                 @Valid @RequestBody UpdatePostDto updatePostDto){
         PostResponse response = postService.modifyPost(memberId, updatePostDto);
         return ApiResponse.success(response);

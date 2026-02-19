@@ -1,5 +1,6 @@
 package study.blog.post.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +32,9 @@ class CreatePostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private EntityManager entityManager;
 
     @Test
     @DisplayName("게시글 생성 - 성공")
