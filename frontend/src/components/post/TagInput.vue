@@ -28,7 +28,7 @@ function removeTag(index) {
 }
 
 function handleKeydown(e) {
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && !e.isComposing) {
     e.preventDefault()
     addTag()
   }

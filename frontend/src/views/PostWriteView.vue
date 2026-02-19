@@ -14,7 +14,7 @@ const content = ref('')
 const tags = ref([])
 const error = ref('')
 const submitting = ref(false)
-const showPreview = ref(false)
+const editorRef = ref(null)
 
 async function submit(status) {
   if (!title.value.trim()) {
@@ -33,9 +33,10 @@ async function submit(status) {
   error.value = ''
   submitting.value = true
   try {
+    const resolvedContent = await editorRef.value?.resolveImages(content.value) ?? content.value
     const res = await postApi.create(auth.user?.id, {
       title: title.value,
-      content: content.value,
+      content: resolvedContent,
       postStatus: status,
       tagNames: tags.value,
     })
@@ -64,19 +65,6 @@ async function submit(status) {
 
       <div class="flex items-center gap-2">
         <button
-          @click="showPreview = !showPreview"
-          :class="[
-            'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition cursor-pointer',
-            showPreview ? 'text-blue-500 bg-blue-50' : 'text-gray-500 hover:text-gray-700'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-          미리보기
-        </button>
-        <button
           @click="submit('DRAFT')"
           :disabled="submitting"
           class="px-4 py-1.5 border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-50 cursor-pointer transition"
@@ -94,7 +82,7 @@ async function submit(status) {
     </header>
 
     <!-- Editor content -->
-    <div class="flex-1 max-w-3xl w-full mx-auto px-6 pt-10 pb-16">
+    <div class="flex-1 max-w-5xl w-full mx-auto px-6 pt-10 pb-16">
       <div v-if="error" class="mb-4 p-3 bg-red-50 text-red-600 border border-red-200 text-sm rounded-lg">
         {{ error }}
       </div>
@@ -116,7 +104,7 @@ async function submit(status) {
       <hr class="border-gray-200 mt-4 mb-4" />
 
       <!-- Editor -->
-      <PostEditor v-model="content" :show-preview="showPreview" />
+      <PostEditor ref="editorRef" v-model="content" />
     </div>
   </div>
 </template>

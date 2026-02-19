@@ -6,6 +6,7 @@ import CommentForm from './CommentForm.vue'
 const props = defineProps({
   comment: { type: Object, required: true },
   replies: { type: Array, default: () => [] },
+  getReplies: { type: Function, default: () => [] },
 })
 
 const emit = defineEmits(['reply'])
@@ -51,7 +52,8 @@ function handleReply(content) {
         v-for="reply in replies"
         :key="reply.commentId"
         :comment="reply"
-        :replies="[]"
+        :replies="getReplies(reply.commentId)"
+        :get-replies="getReplies"
         @reply="(data) => emit('reply', data)"
       />
     </div>

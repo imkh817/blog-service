@@ -69,6 +69,7 @@ onMounted(fetchComments)
         :key="comment.commentId"
         :comment="comment"
         :replies="getReplies(comment.commentId)"
+        :get-replies="getReplies"
         @reply="handleReply"
       />
     </div>
