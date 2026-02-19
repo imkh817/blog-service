@@ -69,9 +69,9 @@ onMounted(search)
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold mb-6">검색</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">검색</h1>
 
-    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">키워드</label>
@@ -79,7 +79,7 @@ onMounted(search)
             v-model="keyword"
             type="text"
             placeholder="제목 또는 내용 검색"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
             @keyup.enter="handleSearch"
           />
         </div>
@@ -89,7 +89,7 @@ onMounted(search)
             v-model="tagFilter"
             type="text"
             placeholder="태그 이름"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
             @keyup.enter="handleSearch"
           />
         </div>
@@ -97,7 +97,7 @@ onMounted(search)
           <label class="block text-sm font-medium text-gray-700 mb-1">정렬</label>
           <select
             v-model="sortType"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 cursor-pointer"
+            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer"
           >
             <option value="CREATED_AT">최신순</option>
             <option value="VIEW_COUNT">조회순</option>
@@ -107,13 +107,13 @@ onMounted(search)
       <div class="flex justify-end gap-3 mt-4">
         <button
           @click="resetFilters"
-          class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+          class="px-4 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 cursor-pointer transition"
         >
           초기화
         </button>
         <button
           @click="handleSearch"
-          class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 cursor-pointer"
+          class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 cursor-pointer transition"
         >
           검색
         </button>
@@ -124,7 +124,7 @@ onMounted(search)
     <div v-else-if="posts.length === 0" class="text-center py-20 text-gray-400">
       검색 결과가 없습니다.
     </div>
-    <div v-else class="space-y-4">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <PostCard v-for="post in posts" :key="post.postId" :post="post" />
     </div>
 

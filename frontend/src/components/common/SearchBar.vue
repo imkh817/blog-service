@@ -18,10 +18,10 @@ function handleSubmit() {
       v-model="keyword"
       type="text"
       placeholder="검색어를 입력하세요..."
-      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+      class="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
     />
     <svg
-      class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+      class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
       fill="none" stroke="currentColor" viewBox="0 0 24 24"
     >
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

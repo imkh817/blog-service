@@ -32,7 +32,7 @@ function goTo(page) {
     <button
       @click="goTo(currentPage - 1)"
       :disabled="currentPage === 1"
-      class="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
     >
       이전
     </button>
@@ -41,10 +41,10 @@ function goTo(page) {
       :key="page"
       @click="goTo(page)"
       :class="[
-        'px-3 py-2 text-sm rounded-lg cursor-pointer',
+        'px-3 py-2 text-sm rounded-lg cursor-pointer transition',
         page === currentPage
           ? 'bg-gray-900 text-white'
-          : 'border border-gray-300 hover:bg-gray-100'
+          : 'border border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
       ]"
     >
       {{ page }}
@@ -52,7 +52,7 @@ function goTo(page) {
     <button
       @click="goTo(currentPage + 1)"
       :disabled="currentPage === totalPages"
-      class="px-3 py-2 text-sm rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      class="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
     >
       다음
     </button>

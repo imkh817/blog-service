@@ -1,1 +1,93 @@
 @import "tailwindcss";
+
+:root {
+  --color-bg: #F2F2F2;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text: #212529;
+  --color-muted: #6C757D;
+  --color-accent: #212529;
+  --color-accent-hover: #343A40;
+}
+
+html {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Prose (markdown) light style */
+.prose {
+  color: var(--color-text);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--color-text);
+}
+
+.prose p {
+  color: #374151;
+}
+
+.prose strong {
+  color: var(--color-text);
+}
+
+.prose code {
+  color: #1F2937;
+  background-color: #F3F4F6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background-color: #1F2937;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #E5E7EB;
+}
+
+.prose blockquote {
+  border-left-color: #D1D5DB;
+  color: var(--color-muted);
+}
+
+.prose a {
+  color: #2563EB;
+}
+
+.prose a:hover {
+  color: #1D4ED8;
+}
+
+.prose hr {
+  border-color: var(--color-border);
+}
+
+.prose ul > li::marker,
+.prose ol > li::marker {
+  color: var(--color-muted);
+}
+
+.prose table thead {
+  border-bottom-color: var(--color-border);
+}
+
+.prose table tbody tr {
+  border-bottom-color: var(--color-border);
+}
+
+.prose table th,
+.prose table td {
+  color: var(--color-text);
+}

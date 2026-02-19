@@ -37,7 +37,7 @@ async function handleSubmit() {
 
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-4">
-    <div v-if="error" class="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+    <div v-if="error" class="p-3 bg-red-50 text-red-600 border border-red-200 text-sm rounded-lg">
       {{ error }}
     </div>
     <div>
@@ -46,7 +46,7 @@ async function handleSubmit() {
         v-model="email"
         type="email"
         required
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+        class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
         placeholder="이메일을 입력하세요"
       />
     </div>
@@ -58,7 +58,7 @@ async function handleSubmit() {
         required
         minlength="2"
         maxlength="20"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+        class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
         placeholder="닉네임을 입력하세요"
       />
     </div>
@@ -69,7 +69,7 @@ async function handleSubmit() {
         type="password"
         required
         minlength="8"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+        class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
         placeholder="8자 이상 입력하세요"
       />
     </div>
@@ -79,14 +79,14 @@ async function handleSubmit() {
         v-model="passwordConfirm"
         type="password"
         required
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+        class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
         placeholder="비밀번호를 다시 입력하세요"
       />
     </div>
     <button
       type="submit"
       :disabled="loading"
-      class="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer"
+      class="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer transition"
     >
       {{ loading ? '가입 중...' : '회원가입' }}
     </button>

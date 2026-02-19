@@ -48,14 +48,14 @@ onMounted(fetchComments)
 
 <template>
   <div class="mt-10">
-    <h3 class="text-lg font-semibold mb-4">댓글 {{ comments.length }}개</h3>
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">댓글 {{ comments.length }}개</h3>
 
     <div v-if="auth.isLoggedIn" class="mb-6">
       <CommentForm @submit="handleSubmit" />
     </div>
     <p v-else class="text-sm text-gray-500 mb-6">
       댓글을 작성하려면
-      <router-link to="/login" class="text-gray-900 underline">로그인</router-link>
+      <router-link to="/login" class="text-gray-900 font-medium hover:underline">로그인</router-link>
       하세요.
     </p>
 

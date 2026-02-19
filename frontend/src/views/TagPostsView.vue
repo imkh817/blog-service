@@ -40,15 +40,15 @@ onMounted(fetchPosts)
 
 <template>
   <div>
-    <h1 class="text-2xl font-bold mb-6">
-      <span class="text-gray-400">#</span>{{ route.params.tagName }}
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">
+      <span class="text-gray-500">#</span>{{ route.params.tagName }}
     </h1>
 
     <div v-if="loading" class="text-center py-20 text-gray-400">불러오는 중...</div>
     <div v-else-if="posts.length === 0" class="text-center py-20 text-gray-400">
       해당 태그의 게시글이 없습니다.
     </div>
-    <div v-else class="space-y-4">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <PostCard v-for="post in posts" :key="post.postId" :post="post" />
     </div>
 

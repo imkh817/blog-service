@@ -39,16 +39,16 @@ function handleKeydown(e) {
 </script>
 
 <template>
-  <div class="border border-gray-300 rounded-lg p-3 flex flex-wrap gap-2 focus-within:ring-2 focus-within:ring-gray-900 focus-within:border-transparent">
+  <div class="flex flex-wrap gap-2 items-center py-1">
     <span
       v-for="(tag, index) in modelValue"
       :key="tag"
-      class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded-full"
     >
-      #{{ tag }}
+      {{ tag }}
       <button
         @click="removeTag(index)"
-        class="text-gray-400 hover:text-gray-600 cursor-pointer"
+        class="text-gray-400 hover:text-gray-600 cursor-pointer leading-none"
       >
         &times;
       </button>
@@ -56,10 +56,9 @@ function handleKeydown(e) {
     <input
       v-model="input"
       @keydown="handleKeydown"
-      :placeholder="modelValue.length === 0 ? '태그를 입력하세요 (Enter로 추가)' : ''"
+      :placeholder="modelValue.length === 0 ? '태그를 입력하세요 (엔터로 추가)' : ''"
       :disabled="modelValue.length >= max"
-      class="flex-1 min-w-[120px] text-sm focus:outline-none disabled:bg-transparent"
+      class="flex-1 min-w-[200px] text-sm text-gray-500 placeholder-gray-300 bg-transparent focus:outline-none disabled:opacity-40"
     />
-    <span class="text-xs text-gray-400 self-center">{{ modelValue.length }}/{{ max }}</span>
   </div>
 </template>

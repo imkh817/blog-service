@@ -23,20 +23,20 @@ function handleSubmit() {
       v-model="content"
       :placeholder="placeholder"
       rows="3"
-      class="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+      class="w-full p-3 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent"
     />
     <div class="flex justify-end gap-2">
       <button
         v-if="parentId"
         @click="emit('cancel')"
-        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 cursor-pointer"
+        class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 cursor-pointer transition"
       >
         취소
       </button>
       <button
         @click="handleSubmit"
         :disabled="!content.trim()"
-        class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        class="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition"
       >
         등록
       </button>

@@ -9,14 +9,14 @@ defineProps({
   <router-link
     v-if="clickable"
     :to="{ name: 'TagPosts', params: { tagName: name } }"
-    class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-gray-200 transition no-underline"
+    class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200 transition no-underline"
   >
-    #{{ name }}
+    {{ name }}
   </router-link>
   <span
     v-else
-    class="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+    class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
   >
-    #{{ name }}
+    {{ name }}
   </span>
 </template>
