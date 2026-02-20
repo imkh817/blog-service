@@ -40,3 +40,4 @@ out/
 CLAUDE.md
 application.yaml
 mysql/data/
+*.class
