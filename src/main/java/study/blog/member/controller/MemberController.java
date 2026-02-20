@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import study.blog.global.common.dto.ApiResponse;
+import study.blog.global.web.resolver.LoginMember;
 import study.blog.member.service.MemberService;
 import study.blog.member.dto.MemberResponse;
 import study.blog.member.dto.SignupRequest;
@@ -24,7 +25,7 @@ public class MemberController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<MemberResponse> getMyInfo(Long memberId) {
+    public ApiResponse<MemberResponse> getMyInfo(@LoginMember Long memberId) {
         MemberResponse response = memberService.findMember(memberId);
         return ApiResponse.success(response);
     }
