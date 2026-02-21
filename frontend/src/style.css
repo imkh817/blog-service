@@ -22,6 +22,11 @@ html {
   font-family: var(--font-body);
 }
 
+/* ── Heading scroll offset (for sticky header) ── */
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  scroll-margin-top: 5rem;
+}
+
 /* ── Prose (markdown) ── */
 .prose {
   color: var(--color-text);

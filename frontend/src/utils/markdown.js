@@ -13,11 +13,28 @@ marked.use(
   })
 )
 
-marked.use({ breaks: true, gfm: true })
+function makeHeadingId(text) {
+  return text
+    .replace(/<[^>]*>/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s]/g, '')
+    .replace(/\s+/g, '-')
+    .trim()
+}
 
-// blob: (편집 중 이미지 미리보기) 와 data:image/ (저장된 이미지) 를 허용
+marked.use({
+  breaks: true,
+  gfm: true,
+  renderer: {
+    heading({ text, depth }) {
+      const id = makeHeadingId(text)
+      return `<h${depth} id="${id}">${text}</h${depth}>\n`
+    },
+  },
+})
+
 const PURIFY_CONFIG = {
-  ADD_ATTR: ['class'],
+  ADD_ATTR: ['class', 'id'],
   ALLOWED_URI_REGEXP:
     /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|blob):|data:image\/|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
 }
@@ -26,4 +43,19 @@ export function renderMarkdown(content) {
   if (!content) return ''
   const html = marked(content)
   return DOMPurify.sanitize(html, PURIFY_CONFIG)
+}
+
+export function extractToc(content) {
+  if (!content) return []
+  const headings = []
+  for (const line of content.split('\n')) {
+    const match = line.match(/^(#{1,3})\s+(.+)$/)
+    if (match) {
+      const level = match[1].length
+      const text = match[2].trim()
+      const id = makeHeadingId(text)
+      headings.push({ level, text, id })
+    }
+  }
+  return headings
 }
