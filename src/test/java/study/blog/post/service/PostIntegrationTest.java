@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import study.blog.global.IntegrationTestSupport;
+import study.blog.like.postlike.service.PostLikeService;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
 import study.blog.post.entity.Post;
@@ -28,22 +29,31 @@ class PostIntegrationTest extends IntegrationTestSupport {
     private PostService postService;
 
     @Autowired
+    private PostLikeService postLikeService;
+
+    @Autowired
     private PostRepository postRepository;
+
 
     @Autowired
     private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
-        postRepository.save(Post.createPost(
+        Post post1 = postRepository.save(Post.createPost(
                 1L, "Spring 입문 가이드", "Spring Boot를 활용한 웹 개발 입문",
                 PUBLISHED, List.of("Java", "Backend")
         ));
+
+        postLikeService.likePost(1L, post1.getId());
+        postLikeService.likePost(2L, post1.getId());
 
         postRepository.save(Post.createPost(
                 1L, "QueryDSL 동적 쿼리 작성법", "복잡한 검색 조건을 QueryDSL로 해결하는 방법",
                 PUBLISHED, List.of("Java", "Database")
         ));
+
+
 
         postRepository.save(Post.createPost(
                 1L, "Spring Security 인증 구현", "JWT 기반 인증 흐름을 구현한다",
@@ -738,5 +748,15 @@ class PostIntegrationTest extends IntegrationTestSupport {
                             "테스트 코드 작성 전략"
                     );
         }
+    }
+
+    @Nested
+    @DisplayName("좋아요를 Redis에서 잘가져오는 검색")
+    class PostLikeSearch {
+        // given
+        PostSearchCondition condition = new PostSearchCondition(
+                null, null, null, null, null
+        );
+        PageRequest firstPage = PageRequest.of(0, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
     }
 }

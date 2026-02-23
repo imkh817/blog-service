@@ -7,8 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import study.blog.global.common.dto.ApiResponse;
+import study.blog.global.security.principal.MemberUserDetails;
 import study.blog.global.web.resolver.LoginMember;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
@@ -65,10 +69,11 @@ public class PostController {
     }
 
     @GetMapping
-    public ApiResponse<List<PostResponse>> searchPostByCondition(@ModelAttribute PostSearchCondition condition,
+    public ApiResponse<List<PostResponse>> searchPostByCondition(@LoginMember Long memberId,
+                                                                 @ModelAttribute PostSearchCondition condition,
                                                                  @PageableDefault Pageable pageable,
                                                                  HttpServletResponse response){
-        Page<PostResponse> page = postService.searchPostByCondition(condition, pageable);
+        Page<PostResponse> page = postService.searchPostByCondition(memberId, condition, pageable);
         response.setHeader("X-Total-Count", String.valueOf(page.getTotalElements()));
         return ApiResponse.success(page.getContent());
     }
