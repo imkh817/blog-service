@@ -8,6 +8,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import study.blog.like.postlike.repository.PostLikeCountReader;
+import study.blog.like.postlike.repository.PostLikeRepository;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
@@ -17,7 +19,10 @@ import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.PostNotFoundException;
 import study.blog.post.repository.PostRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,8 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostLikeCountReader postLikeCountReader;
+    private final PostLikeRepository postLikeRepository;
     private final EntityManager em;
 
     @Transactional
@@ -86,11 +93,23 @@ public class PostService {
         return PostResponse.from(post);
     }
 
-    public Page<PostResponse> searchPostByCondition(PostSearchCondition condition, Pageable pageable) {
+    public Page<PostResponse> searchPostByCondition(Long memberId, PostSearchCondition condition, Pageable pageable) {
         List<Post> posts = postRepository.searchPostByCondition(condition, pageable);
         long total = postRepository.countPostByCondition(condition);
+
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
+        Map<Long, Long> likeCounts = postLikeCountReader.getLikeCounts(postIds); // 좋아요 갯수
+
+        Set<Long> likedPostIds = (memberId == null)
+                ? Set.of()
+                : new HashSet<>(postLikeRepository.findPostIdByMemberIdAndPostIdIn(memberId, postIds));
+
+
         List<PostResponse> content = posts.stream()
-                .map(PostResponse::from)
+                .map(post -> PostResponse.from(
+                        post,
+                        likeCounts.getOrDefault(post.getId(), 0L),
+                        likedPostIds.contains(post.getId())))
                 .toList();
         return new PageImpl<>(content, pageable, total);
     }

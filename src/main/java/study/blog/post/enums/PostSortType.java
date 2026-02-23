@@ -10,7 +10,8 @@ import java.util.Optional;
 
 public enum PostSortType {
     CREATED_AT("createdAt"),
-    VIEW_COUNT("viewCount");
+    VIEW_COUNT("viewCount"),
+    LIKE_COUNT("like_count");
 
     private final String property;
 

@@ -23,12 +23,24 @@ public class LoginMemberResolver implements HandlerMethodArgumentResolver {
                                   ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest,
                                   WebDataBinderFactory binderFactory) {
+        LoginMember annotation = parameter.getParameterAnnotation(LoginMember.class);
+        boolean required = (annotation == null) || annotation.required();
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !(authentication.getPrincipal() instanceof LoginMemberId loginMemberId)) {
+        Long memberId = null;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof LoginMemberId loginMemberId) {
+                memberId = loginMemberId.memberId();
+            }
+        }
+
+        if (memberId == null && required) {
             throw new IllegalArgumentException("인증 정보가 존재하지 않습니다.");
         }
 
-        return loginMemberId.memberId();
+        return memberId;
     }
 }
