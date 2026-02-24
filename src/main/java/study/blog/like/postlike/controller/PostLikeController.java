@@ -29,11 +29,4 @@ public class PostLikeController {
         return ApiResponse.success(response);
     }
 
-    @GetMapping("/{postId}/likes")
-    public ApiResponse<PostLikeResponse> getPostLikes(@PathVariable Long postId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long memberId = authentication != null && authentication.getPrincipal() instanceof LoginMemberId loginMemberId ? (Long) loginMemberId.memberId() : null;
-        PostLikeResponse response = postLikeService.findPostLikes(memberId, postId);
-        return ApiResponse.success(response);
-    }
 }

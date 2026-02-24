@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.blog.like.postlike.repository.PostLikeCountReader;
 import study.blog.like.postlike.repository.PostLikeRepository;
+import study.blog.like.postlike.repository.PostLikedChecker;
 import study.blog.post.dto.CreatePostDto;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
@@ -31,8 +32,8 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostLikeCountReader postLikeCountReader;
-    private final PostLikeRepository postLikeRepository;
     private final EntityManager em;
+    private final PostLikedChecker postLikedChecker;
 
     @Transactional
     public PostResponse createPost(Long authorId, CreatePostDto createPostDto){
@@ -102,7 +103,7 @@ public class PostService {
 
         Set<Long> likedPostIds = (memberId == null)
                 ? Set.of()
-                : new HashSet<>(postLikeRepository.findPostIdByMemberIdAndPostIdIn(memberId, postIds));
+                : new HashSet<>(postLikedChecker.findPostIdByMemberIdAndPostIdIn(memberId, postIds));
 
 
         List<PostResponse> content = posts.stream()
