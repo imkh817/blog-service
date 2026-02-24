@@ -112,26 +112,13 @@ onMounted(async () => {
 
               <div class="author-divider"></div>
 
-              <!-- 좋아요 버튼 -->
-              <button
-                class="action-like"
-                :class="{ liked }"
-                @click="liked = !liked"
-              >
-                <svg viewBox="0 0 24 24" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span>{{ (post.likeCount ?? 0) + (liked ? 1 : 0) }}</span>
-              </button>
-
-              <!-- 공유 버튼 -->
-              <button class="action-share" @click="handleShare">
+              <!-- 구독 버튼 -->
+              <button class="action-subscribe">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                공유하기
+                구독하기
               </button>
             </div>
           </aside>
@@ -164,6 +151,28 @@ onMounted(async () => {
             <!-- 콘텐츠 -->
             <div class="post-content">
               <PostContent :content="post.content" />
+            </div>
+
+            <!-- 반응 바 (좋아요 + 공유) -->
+            <div class="post-reactions">
+              <button
+                class="reaction-like"
+                :class="{ liked }"
+                @click="liked = !liked"
+              >
+                <svg viewBox="0 0 24 24" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>{{ (post.likeCount ?? 0) + (liked ? 1 : 0) }}</span>
+              </button>
+              <button class="reaction-share" @click="handleShare">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                공유하기
+              </button>
             </div>
 
             <!-- 작성자 액션 (수정/발행/삭제) -->
@@ -340,49 +349,75 @@ onMounted(async () => {
   margin: 0.75rem 0 0.25rem;
 }
 
-/* 좋아요 버튼 */
-.action-like {
+/* 구독 버튼 */
+.action-subscribe {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding: 0.55rem;
-  border: 1.5px solid #e5e7eb;
+  padding: 0.6rem;
+  border: none;
   border-radius: 8px;
-  background: #fff;
+  background: linear-gradient(135deg, #4776E6, #8E54E9);
+  color: #fff;
   font-size: 0.82rem;
-  color: #6b7280;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.15s;
+  transition: opacity 0.15s;
   margin-top: 0.25rem;
 }
-.action-like svg { width: 15px; height: 15px; flex-shrink: 0; }
-.action-like:hover { border-color: #ef4444; color: #ef4444; }
-.action-like.liked { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+.action-subscribe svg { width: 15px; height: 15px; flex-shrink: 0; }
+.action-subscribe:hover { opacity: 0.88; }
 
-/* 공유 버튼 */
-.action-share {
-  width: 100%;
+/* 반응 바 (좋아요 + 공유) */
+.post-reactions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.55rem;
+  gap: 0.75rem;
+  padding: 1.75rem 0 1.5rem;
+  border-top: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 1.5rem;
+}
+.reaction-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.4rem;
   border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #fff;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: #6b7280;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s;
 }
-.action-share svg { width: 15px; height: 15px; flex-shrink: 0; }
-.action-share:hover { border-color: #4776E6; color: #4776E6; }
+.reaction-like svg { width: 18px; height: 18px; flex-shrink: 0; }
+.reaction-like:hover { border-color: #ef4444; color: #ef4444; }
+.reaction-like.liked { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+
+.reaction-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.4rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.reaction-share svg { width: 18px; height: 18px; flex-shrink: 0; }
+.reaction-share:hover { border-color: #4776E6; color: #4776E6; }
 
 /* ── 중앙: 본문 ── */
 .article-main {
@@ -597,7 +632,7 @@ onMounted(async () => {
   }
   .author-avatar { width: 48px; height: 48px; font-size: 1.1rem; margin-bottom: 0; }
   .author-divider { display: none; }
-  .action-like, .action-share { width: auto; padding: 0.4rem 0.85rem; }
+  .action-subscribe { width: auto; padding: 0.45rem 1rem; }
   .toc-sidebar { display: none; }
   .article-main { padding: 2rem 1.5rem; }
 }

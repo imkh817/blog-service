@@ -7,9 +7,17 @@ import Pagination from '../components/common/Pagination.vue'
 
 const postStore = usePostStore()
 
-const currentPage = ref(1)
-const selectedTag = ref('')
-const showAllTags  = ref(false)
+const currentPage   = ref(1)
+const selectedTag   = ref('')
+const searchKeyword = ref('')
+const showAllTags   = ref(false)
+const sortType      = ref('createdAt,desc')
+
+const SORT_OPTIONS = [
+  { label: 'Latest',      value: 'createdAt,desc' },
+  { label: 'Most Viewed', value: 'viewCount,desc'  },
+  { label: 'Most Liked',  value: 'likeCount,desc'  },
+]
 
 const allTags = computed(() => {
   const tagCount = {}
@@ -32,18 +40,31 @@ async function loadPosts() {
     postStatuses: 'PUBLISHED',
     page: currentPage.value - 1,
     size: 9,
-    sort: 'createdAt,desc',
+    sort: sortType.value,
   }
-  if (selectedTag.value) params.tagNames = selectedTag.value
+  if (selectedTag.value)   params.tagNames = selectedTag.value
+  if (searchKeyword.value) params.keyword  = searchKeyword.value
   await postStore.fetchPosts(params)
 }
 
 function selectTag(tag) {
-  selectedTag.value = selectedTag.value === tag ? '' : tag
+  selectedTag.value   = selectedTag.value === tag ? '' : tag
+  searchKeyword.value = ''
+  currentPage.value   = 1
+}
+
+function handleSearch(keyword) {
+  searchKeyword.value = keyword
+  selectedTag.value   = ''
+  currentPage.value   = 1
+}
+
+function setSort(value) {
+  sortType.value = value
   currentPage.value = 1
 }
 
-watch([currentPage, selectedTag], loadPosts)
+watch([currentPage, selectedTag, searchKeyword, sortType], loadPosts)
 onMounted(loadPosts)
 </script>
 
@@ -51,13 +72,18 @@ onMounted(loadPosts)
   <div class="home-page">
 
     <!-- ── 공통 헤더 ── -->
-    <BlogHeader />
+    <BlogHeader
+      :tags="allTags"
+      @search="handleSearch"
+      @tag-select="selectTag"
+    />
 
     <!-- ── 히어로 ── -->
     <section class="hero">
-      <h1 class="hero-title">{{ selectedTag || 'blog' }}</h1>
-      <p v-if="!selectedTag" class="hero-sub">개발자들의 기술 경험과 인사이트를 공유합니다</p>
-      <p v-else class="hero-sub">{{ selectedTag }} 관련 포스트</p>
+      <h1 class="hero-title">{{ searchKeyword || selectedTag || 'blog' }}</h1>
+      <p v-if="searchKeyword" class="hero-sub">"{{ searchKeyword }}" 검색 결과</p>
+      <p v-else-if="selectedTag" class="hero-sub">{{ selectedTag }} 관련 포스트</p>
+      <p v-else class="hero-sub">개발자들의 기술 경험과 인사이트를 공유합니다</p>
     </section>
 
     <!-- ── 메인 콘텐츠 ── -->
@@ -92,7 +118,18 @@ onMounted(loadPosts)
 
         <!-- Posts 섹션 -->
         <section class="posts-section">
-          <h2 class="section-title">Posts</h2>
+          <div class="posts-header">
+            <h2 class="section-title">Posts</h2>
+            <div class="sort-tabs">
+              <button
+                v-for="opt in SORT_OPTIONS"
+                :key="opt.value"
+                class="sort-tab"
+                :class="{ active: sortType === opt.value }"
+                @click="setSort(opt.value)"
+              >{{ opt.label }}</button>
+            </div>
+          </div>
 
           <div v-if="postStore.loading" class="state-box">
             <div class="loading-dots"><span></span><span></span><span></span></div>
@@ -219,6 +256,43 @@ onMounted(loadPosts)
 .tag-pill.active { border-color: #4776E6; color: #4776E6; background: rgba(71,118,230,0.08); font-weight: 500; }
 
 /* ── Posts 섹션 ── */
+.posts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.sort-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+
+.sort-tab {
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.sort-tab:hover { color: #374151; }
+.sort-tab.active {
+  background: linear-gradient(135deg, #4776E6, #8E54E9);
+  color: #fff;
+  font-weight: 600;
+}
+
 .post-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

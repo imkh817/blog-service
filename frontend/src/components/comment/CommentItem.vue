@@ -13,6 +13,28 @@ const emit = defineEmits(['reply'])
 const auth = useAuthStore()
 const showReplyForm = ref(false)
 
+const AVATAR_PALETTES = [
+  ['#4776E6', '#8E54E9'],
+  ['#f093fb', '#f5576c'],
+  ['#4facfe', '#00f2fe'],
+  ['#43e97b', '#38f9d7'],
+  ['#fa709a', '#fee140'],
+  ['#a18cd1', '#fbc2eb'],
+  ['#667eea', '#764ba2'],
+  ['#f7971e', '#ffd200'],
+  ['#11998e', '#38ef7d'],
+  ['#fc466b', '#3f5efb'],
+]
+
+function avatarStyle(authorId) {
+  const [from, to] = AVATAR_PALETTES[authorId % AVATAR_PALETTES.length]
+  return { background: `linear-gradient(135deg, ${from}, ${to})` }
+}
+
+function avatarLetter(authorId) {
+  return String.fromCharCode(65 + (authorId % 26))
+}
+
 function handleReply(content) {
   emit('reply', { parentId: props.comment.commentId, content })
   showReplyForm.value = false
@@ -30,7 +52,7 @@ function formatDate(dateStr) {
     <!-- Comment header -->
     <div class="comment-header">
       <div class="comment-author">
-        <div class="comment-avatar">U</div>
+        <div class="comment-avatar" :style="avatarStyle(comment.authorId)">{{ avatarLetter(comment.authorId) }}</div>
         <div>
           <span class="author-name">사용자 {{ comment.authorId }}</span>
           <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
@@ -95,7 +117,6 @@ function formatDate(dateStr) {
 .comment-avatar {
   width: 30px; height: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #4776E6, #8E54E9);
   color: white;
   font-size: 0.72rem;
   font-weight: 700;
