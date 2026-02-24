@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import study.blog.global.IntegrationTestSupport;
+import study.blog.like.postlike.infra.PostLikeRedisKeys;
 import study.blog.like.postlike.service.PostLikeService;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
@@ -37,6 +39,9 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @BeforeEach
     void setUp() {
@@ -93,7 +98,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
@@ -111,7 +116,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -129,7 +134,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -147,7 +152,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -168,7 +173,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -186,7 +191,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
@@ -204,7 +209,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(3)
@@ -226,7 +231,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -247,7 +252,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(4)
@@ -273,7 +278,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
@@ -297,7 +302,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -313,7 +318,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -335,7 +340,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -352,7 +357,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -370,7 +375,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -387,7 +392,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -404,7 +409,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -425,7 +430,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -443,7 +448,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -461,7 +466,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(3)
@@ -490,7 +495,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -512,7 +517,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
@@ -534,7 +539,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -555,7 +560,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 2));
+                    null, condition, PageRequest.of(0, 2));
 
             // then
             assertThat(results).hasSize(2);
@@ -571,9 +576,9 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> firstPage = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 2));
+                    null, condition, PageRequest.of(0, 2));
             Page<PostResponse> secondPage = postService.searchPostByCondition(
-                    condition, PageRequest.of(1, 2));
+                    null, condition, PageRequest.of(1, 2));
 
             // then
             assertThat(firstPage).hasSize(2);
@@ -594,7 +599,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(100, 10));
+                    null, condition, PageRequest.of(100, 10));
 
             // then
             assertThat(results).isEmpty();
@@ -615,7 +620,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
             // when
             Page<PostResponse> results = postService.searchPostByCondition(
-                    condition, PageRequest.of(0, 100));
+                    null, condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -636,7 +641,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -654,7 +659,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -672,7 +677,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "viewCount"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -688,7 +693,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "unknownField"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -706,7 +711,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(condition, pageable);
+            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
 
             // then
             assertThat(results).hasSize(3)
@@ -729,8 +734,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest secondPage = PageRequest.of(1, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> firstResults = postService.searchPostByCondition(condition, firstPage);
-            Page<PostResponse> secondResults = postService.searchPostByCondition(condition, secondPage);
+            Page<PostResponse> firstResults = postService.searchPostByCondition(null, condition,firstPage);
+            Page<PostResponse> secondResults = postService.searchPostByCondition(null, condition,secondPage);
 
             // then
             assertThat(firstResults).hasSize(3)
@@ -751,12 +756,87 @@ class PostIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("좋아요를 Redis에서 잘가져오는 검색")
+    @DisplayName("좋아요를 Redis에서 잘 가져오는 검색")
     class PostLikeSearch {
-        // given
-        PostSearchCondition condition = new PostSearchCondition(
-                null, null, null, null, null
-        );
-        PageRequest firstPage = PageRequest.of(0, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
+
+        @Test
+        @DisplayName("Redis에 캐시된 좋아요 수가 조회 응답에 반영된다")
+        void Redis에_캐시된_좋아요_수가_조회_응답에_반영된다() {
+            // given
+            // @Transactional 테스트 환경에서 AFTER_COMMIT 이벤트가 발생하지 않아
+            // setUp의 likePost 호출은 Redis를 업데이트하지 않는다.
+            // → Redis에 직접 값을 세팅하여 조회 시 읽기 경로를 검증한다.
+            Post post1 = postRepository.findAll().stream()
+                    .filter(p -> p.getTitle().equals("Spring 입문 가이드"))
+                    .findFirst().orElseThrow();
+
+            stringRedisTemplate.opsForValue()
+                    .set(PostLikeRedisKeys.postLikeCount(post1.getId()), "2");
+
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = postService.searchPostByCondition(
+                    null, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).likeCount()).isEqualTo(2L);
+        }
+
+        @Test
+        @DisplayName("좋아요를 누른 회원으로 조회하면 isLikedByMe=true이다")
+        void 좋아요_누른_회원으로_조회하면_isLikedByMe는_true이다() {
+            // given
+            // setUp에서 memberId=1L이 post1("Spring 입문 가이드")에 좋아요를 눌렀다
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = postService.searchPostByCondition(
+                    1L, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isTrue();
+        }
+
+        @Test
+        @DisplayName("좋아요를 누르지 않은 회원으로 조회하면 isLikedByMe=false이다")
+        void 좋아요_안_누른_회원으로_조회하면_isLikedByMe는_false이다() {
+            // given
+            // memberId=3L은 setUp에서 어떤 게시글에도 좋아요를 누르지 않았다
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = postService.searchPostByCondition(
+                    3L, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
+        }
+
+        @Test
+        @DisplayName("로그인하지 않은 상태(memberId=null)로 조회하면 isLikedByMe=false이다")
+        void 비로그인_조회시_isLikedByMe는_false이다() {
+            // given
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = postService.searchPostByCondition(
+                    null, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
+        }
     }
 }
