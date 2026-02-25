@@ -31,7 +31,7 @@ public abstract class IntegrationTestSupport {
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", MYSQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.url", () -> MYSQL_CONTAINER.getJdbcUrl().replace("jdbc:mysql://", "jdbc:p6spy:mysql://"));
         registry.add("spring.datasource.username", MYSQL_CONTAINER::getUsername);
         registry.add("spring.datasource.password", MYSQL_CONTAINER::getPassword);
         registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);

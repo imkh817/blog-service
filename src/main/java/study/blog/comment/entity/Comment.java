@@ -27,6 +27,8 @@ public class Comment extends BaseEntity {
 
     private Long authorId;
 
+    private String authorNickName;
+
     @Column(length = 1000)
     private String content;
 

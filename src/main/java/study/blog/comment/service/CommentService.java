@@ -6,9 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.blog.comment.dto.CommentResponse;
+import study.blog.comment.dto.CommentViewResponse;
 import study.blog.comment.dto.CreateCommentRequest;
 import study.blog.comment.entity.Comment;
 import study.blog.comment.exception.CommentNotFoundException;
+import study.blog.comment.repository.CommentQueryRepository;
 import study.blog.comment.repository.CommentRepository;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final CommentQueryRepository commentQueryRepository;
 
     @Transactional
     public CommentResponse createComment(Long postId, Long memberId,
@@ -28,11 +31,8 @@ public class CommentService {
         return CommentResponse.from(comment);
     }
 
-    public List<CommentResponse> findAllCommentWithPaging(Long postId, Pageable pageable) {
-        List<Comment> allCommentsWithPaging = commentRepository.findAllCommentsWithPaging(postId, pageable);
-        return allCommentsWithPaging.stream()
-                .map(CommentResponse::from)
-                .toList();
+    public List<CommentViewResponse> findAllCommentWithPaging(Long postId, Pageable pageable) {
+        return commentQueryRepository.findAllCommentsWithPaging(postId, pageable);
     }
 
     public CommentResponse findComment(Long postId, Long commentId) {

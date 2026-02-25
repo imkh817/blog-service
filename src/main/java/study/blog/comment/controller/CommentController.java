@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import study.blog.comment.dto.CommentResponse;
+import study.blog.comment.dto.CommentViewResponse;
 import study.blog.comment.dto.CreateCommentRequest;
 import study.blog.comment.service.CommentService;
 import study.blog.global.common.dto.ApiResponse;
@@ -28,8 +29,8 @@ public class CommentController {
     }
 
     @GetMapping
-    public ApiResponse<List<CommentResponse>> findAllCommentWithPaging(@PathVariable Long postId, @PageableDefault Pageable pageable) {
-        List<CommentResponse> comments = commentService.findAllCommentWithPaging(postId, pageable);
+    public ApiResponse<List<CommentViewResponse>> findAllCommentWithPaging(@PathVariable Long postId, @PageableDefault Pageable pageable) {
+        List<CommentViewResponse> comments = commentService.findAllCommentWithPaging(postId, pageable);
         return ApiResponse.success(comments);
     }
 
