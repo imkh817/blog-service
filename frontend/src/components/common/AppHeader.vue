@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import NotificationBell from './NotificationBell.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -56,6 +57,9 @@ watch(showDropdown, (val) => {
         <template v-if="auth.isLoggedIn">
           <!-- Write button -->
           <button class="write-btn" @click="goWrite">새 글 작성</button>
+
+          <!-- Notification bell -->
+          <NotificationBell />
 
           <!-- Avatar dropdown -->
           <div class="avatar-wrap">
