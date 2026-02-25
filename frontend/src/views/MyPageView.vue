@@ -1,9 +1,13 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { postApi } from '../api/postApi'
+import BlogHeader from '../components/common/BlogHeader.vue'
 import PostCard from '../components/post/PostCard.vue'
 import Pagination from '../components/common/Pagination.vue'
+
+const router = useRouter()
 
 const auth = useAuthStore()
 
@@ -43,9 +47,19 @@ function switchTab(val) {
 
 watch([activeTab, currentPage], fetchPosts)
 onMounted(fetchPosts)
+
+function handleSearch(keyword) {
+  router.push({ name: 'Home', query: { keyword } })
+}
+
+function handleTagSelect(tag) {
+  router.push({ name: 'Home', query: { tag } })
+}
 </script>
 
 <template>
+  <div>
+  <BlogHeader @search="handleSearch" @tag-select="handleTagSelect" />
   <div class="mypage">
 
     <!-- Profile header -->
@@ -92,9 +106,17 @@ onMounted(fetchPosts)
 
     <Pagination v-model:currentPage="currentPage" :totalPages="totalPages" />
   </div>
+  </div>
 </template>
 
 <style scoped>
+.mypage {
+  max-width: 72rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
 /* ── Profile header ── */
 .profile-header {
   display: flex;

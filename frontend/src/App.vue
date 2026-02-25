@@ -11,9 +11,9 @@ const isEditorRoute = computed(() =>
   ['PostWrite', 'PostEdit', 'Signup', 'Login'].includes(route.name)
 )
 
-// 홈/검색/글상세 라우트: 자체 헤더 + 풀 너비
+// 홈/검색/글상세/태그/마이페이지/프로필/알림 라우트: 자체 헤더 + 풀 너비
 const isDiscoveryRoute = computed(() =>
-  ['Home', 'Search', 'PostDetail'].includes(route.name)
+  ['Home', 'Search', 'PostDetail', 'TagPosts', 'MyPage', 'UserProfile', 'Notifications'].includes(route.name)
 )
 </script>
 

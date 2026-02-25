@@ -2,6 +2,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import NotificationBell from './NotificationBell.vue'
 
 const props = defineProps({
   tags: { type: Array, default: () => [] },
@@ -77,6 +78,7 @@ watch(showDropdown, (val) => {
             </svg>
             새 글 작성
           </button>
+          <NotificationBell />
           <div class="avatar-wrap">
             <button class="avatar-btn" @click.stop="showDropdown = !showDropdown">
               {{ auth.user?.nickname?.charAt(0)?.toUpperCase() || 'U' }}

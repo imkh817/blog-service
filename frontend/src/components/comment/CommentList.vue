@@ -19,7 +19,7 @@ function getReplies(parentId) { return comments.value.filter(c => c.parentId ===
 async function fetchComments() {
   loading.value = true
   try {
-    const res = await commentApi.getByPostId(props.postId)
+    const res = await commentApi.getByPostId(props.postId, { size: 100, sort: 'createdAt,asc' })
     comments.value = res.data.data || []
   } catch { comments.value = [] }
   finally  { loading.value = false }
