@@ -17,13 +17,13 @@ public record PostResponse(
         long viewCount,
         List<String> tags
 ) {
-    public static PostResponse from(Post post, long likeCount, boolean isLikedByMe){
+    public static PostResponse from(Post post, boolean isLikedByMe){
         return new PostResponse(post.getId(),
                 post.getAuthorId(),
                 post.getTitle(),
                 post.getContent(),
                 post.getPostStatus(),
-                likeCount,
+                post.getLikeCount(),
                 isLikedByMe,
                 post.getViewCount(),
                 post.getTags().stream()
@@ -34,6 +34,6 @@ public record PostResponse(
     }
 
     public static PostResponse from(Post post){
-        return from(post, 0L, false);
+        return from(post, false);
     }
 }

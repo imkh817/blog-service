@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public enum PostSortType {
     CREATED_AT("createdAt"),
+    LIKE_COUNT("likeCount"),
     VIEW_COUNT("viewCount");
-    //LIKE_COUNT("like_count");
 
     private final String property;
 
@@ -31,6 +31,7 @@ public enum PostSortType {
         return switch (this) {
             case CREATED_AT -> new OrderSpecifier<>(order, post.createdAt);
             case VIEW_COUNT -> new OrderSpecifier<>(order, post.viewCount);
+            case LIKE_COUNT -> new OrderSpecifier<>(order, post.likeCount);
         };
     }
 }

@@ -11,4 +11,6 @@ public interface PostRepositoryCustom {
     List<Post> searchPostByCondition(PostSearchCondition condition, Pageable pageable);
 
     long countPostByCondition(PostSearchCondition condition);
+
+    long incrementLikeCount(Long postId, int delta);
 }

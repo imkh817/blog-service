@@ -87,11 +87,13 @@ public class PostService {
         return PostResponse.from(post);
     }
 
-    public PostResponse findPost(Long postId) {
+    public PostResponse findPost(Long postId, Long memberId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
-        return PostResponse.from(post);
+        boolean isLikedByMe = memberId != null && postLikedChecker.existsByMemberIdAndPostId(memberId, postId);
+
+        return PostResponse.from(post, isLikedByMe);
     }
 
     public Page<PostResponse> searchPostByCondition(Long memberId, PostSearchCondition condition, Pageable pageable) {
@@ -99,8 +101,6 @@ public class PostService {
         long total = postRepository.countPostByCondition(condition);
 
         List<Long> postIds = posts.stream().map(Post::getId).toList();
-        Map<Long, Long> likeCounts = postLikeCountReader.getLikeCounts(postIds); // 좋아요 갯수
-
         Set<Long> likedPostIds = (memberId == null)
                 ? Set.of()
                 : new HashSet<>(postLikedChecker.findPostIdByMemberIdAndPostIdIn(memberId, postIds));
@@ -109,7 +109,6 @@ public class PostService {
         List<PostResponse> content = posts.stream()
                 .map(post -> PostResponse.from(
                         post,
-                        likeCounts.getOrDefault(post.getId(), 0L),
                         likedPostIds.contains(post.getId())))
                 .toList();
         return new PageImpl<>(content, pageable, total);

@@ -15,4 +15,8 @@ public class DbPostLikeChecker implements PostLikedChecker{
     public List<Long> findPostIdByMemberIdAndPostIdIn(Long memberId, List<Long> postIds){
         return postLikeRepository.findPostIdByMemberIdAndPostIdIn(memberId, postIds);
     }
+
+    public boolean existsByMemberIdAndPostId(Long memberId, Long postId){
+        return postLikeRepository.existsByMemberIdAndPostId(memberId, postId);
+    }
 }
