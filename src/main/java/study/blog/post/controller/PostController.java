@@ -63,13 +63,14 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ApiResponse<PostResponse> findPost(@PathVariable Long postId){
-        PostResponse post = postService.findPost(postId);
+    public ApiResponse<PostResponse> findPost(@PathVariable Long postId,
+                                              @LoginMember(required = false) Long memberId){
+        PostResponse post = postService.findPost(postId, memberId);
         return ApiResponse.success(post);
     }
 
     @GetMapping
-    public ApiResponse<List<PostResponse>> searchPostByCondition(@LoginMember Long memberId,
+    public ApiResponse<List<PostResponse>> searchPostByCondition(@LoginMember(required = false) Long memberId,
                                                                  @ModelAttribute PostSearchCondition condition,
                                                                  @PageableDefault Pageable pageable,
                                                                  HttpServletResponse response){

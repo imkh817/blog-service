@@ -35,6 +35,8 @@ public class Post extends BaseEntity {
 
     private long viewCount;
 
+    private long likeCount;
+
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<PostTag> tags = new ArrayList<>();
 
@@ -50,6 +52,7 @@ public class Post extends BaseEntity {
         post.content = content;
         post.postStatus = postStatus;
         post.viewCount = 0L;
+        post.likeCount = 0L;
         post.addTags(tagNames);
         return post;
     }
@@ -163,7 +166,7 @@ public class Post extends BaseEntity {
         this.postStatus = PostStatus.PUBLISHED;
     }
 
-public void hide() {
+    public void hide() {
         validatePostStatusToHide(this.postStatus);
         this.postStatus = PostStatus.HIDDEN;
     }
@@ -172,4 +175,9 @@ public void hide() {
         validatePostStatusToDelete(this.postStatus);
         this.postStatus = PostStatus.DELETED;
     }
+
+    public void increment(int delta){
+        this.likeCount += delta;
+    }
+
 }
