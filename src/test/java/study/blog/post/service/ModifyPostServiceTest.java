@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import study.blog.post.dto.ModifyPostResponse;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.UpdatePostDto;
 import study.blog.post.entity.Post;
@@ -65,7 +66,7 @@ class ModifyPostServiceTest {
 
         when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(existingPost));
 
-        PostResponse modifiedPost = postService.modifyPost(authorId, updatePostDto);
+        ModifyPostResponse modifiedPost = postService.modifyPost(authorId, updatePostDto);
 
         assertThat(modifiedPost.title()).isEqualTo("테스트 제목(수정)");
         assertThat(modifiedPost.content()).isEqualTo("테스트 본문(수정)");

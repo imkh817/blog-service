@@ -1,5 +1,6 @@
 package study.blog.comment.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -9,11 +10,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import study.blog.comment.dto.CommentViewResponse;
 import study.blog.comment.dto.QCommentViewResponse;
-import study.blog.comment.entity.Comment;
 import study.blog.comment.enums.CommentSortType;
-import study.blog.member.entity.QMember;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static study.blog.comment.entity.QComment.comment;
 import static study.blog.member.entity.QMember.member;
@@ -44,6 +45,32 @@ public class CommentRepositoryCustomImpl implements CommentQueryRepository{
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
+
+    @Override
+    public Map<Long, Long> countCommentByPostIds(List<Long> postIds) {
+        List<Tuple> result = queryFactory
+                .select(comment.postId, comment.count())
+                .from(comment)
+                .where(comment.postId.in(postIds))
+                .groupBy(comment.postId)
+                .fetch();
+
+        return result.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(comment.postId),
+                        tuple -> tuple.get(comment.count())
+                        ));
+    }
+
+    @Override
+    public long countCommentByPostId(Long postId) {
+        Long result = queryFactory
+                .select(comment.count())
+                .from(comment)
+                .where(comment.postId.eq(postId))
+                .fetchOne();
+        return result != null ? result : 0L;
     }
 
     public BooleanExpression postIdEq(Long postId){

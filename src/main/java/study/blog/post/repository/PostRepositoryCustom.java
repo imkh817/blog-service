@@ -8,9 +8,15 @@ import java.util.List;
 
 public interface PostRepositoryCustom {
 
-    List<Post> searchPostByCondition(PostSearchCondition condition, Pageable pageable);
+    List<Post> searchPostsByCondition(Long memberId, PostSearchCondition condition, Pageable pageable);
 
     long countPostByCondition(PostSearchCondition condition);
 
     long incrementLikeCount(Long postId, int delta);
+
+    long incrementViewCount(Long postId, long viewCount);
+
+    List<Post> searchMemberPosts(Long memberId, PostSearchCondition condition, Pageable pageable);
+
+    long countMemberPosts(Long memberId, PostSearchCondition condition);
 }

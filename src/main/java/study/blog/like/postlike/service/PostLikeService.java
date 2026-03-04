@@ -22,7 +22,9 @@ public class PostLikeService {
 
     /**
      * 게시글 좋아요 생성
-     * 트랜잭션 내에서 DB count를 직접 읽어 반환 (Redis는 AFTER_COMMIT에 비동기로 반영됨)
+     * 좋아요/취소 직후 응답값: post_like Count 집계 계산 (정확성 우선)
+     * 목록 조회 정렬: Post.likeCount 비정규화 컬럼 사용 (성능 우선)
+     * Post.likeCount는 AFTER_COMMIT 이후 이벤트로 비동기 반영
      */
     @Transactional
     public PostLikeResponse likePost(Long postId, Long memberId) {
@@ -34,7 +36,6 @@ public class PostLikeService {
 
         long likeCount = postLikeRepository.countByPostId(postId);
 
-        // 이벤트 발생 -> likeCount update
         eventPublisher.publishEvent(new PostLikeCountChangedEvent(postId, 1));
 
         return PostLikeResponse.from(postId, likeCount, true);
@@ -42,7 +43,9 @@ public class PostLikeService {
 
     /**
      * 게시글 좋아요 취소
-     * 트랜잭션 내에서 DB count를 직접 읽어 반환 (Redis는 AFTER_COMMIT에 비동기로 반영됨)
+     * 좋아요/취소 직후 응답값: post_like Count 집계 계산 (정확성 우선)
+     * 목록 조회 정렬: Post.likeCount 비정규화 컬럼 사용 (성능 우선)
+     * Post.likeCount는 AFTER_COMMIT 이후 이벤트로 비동기 반영
      */
     @Transactional
     public PostLikeResponse unlikePost(Long postId, Long memberId) {
@@ -53,9 +56,10 @@ public class PostLikeService {
             throw new LikeNotFoundException("좋아요를 누르지 않은 게시글입니다.");
         }
 
-
         long likeCount = postLikeRepository.countByPostId(postId);
+
         eventPublisher.publishEvent(new PostLikeCountChangedEvent(postId, -1));
+
         return PostLikeResponse.from(postId, likeCount, false);
     }
 }

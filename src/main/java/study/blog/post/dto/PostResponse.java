@@ -15,9 +15,10 @@ public record PostResponse(
         long likeCount,
         boolean isLikedByMe,
         long viewCount,
-        List<String> tags
+        List<String> tags,
+        long commentCounts
 ) {
-    public static PostResponse from(Post post, boolean isLikedByMe){
+    public static PostResponse from(Post post, boolean isLikedByMe, long commentCounts){
         return new PostResponse(post.getId(),
                 post.getAuthorId(),
                 post.getTitle(),
@@ -29,11 +30,25 @@ public record PostResponse(
                 post.getTags().stream()
                         .distinct()
                         .map(PostTag::getName)
-                        .toList()
+                        .toList(),
+                commentCounts
                 );
     }
 
-    public static PostResponse from(Post post){
-        return from(post, false);
+    public static PostResponse from(Post post, long viewCount, boolean isLikedByMe, long commentCounts){
+        return new PostResponse(post.getId(),
+                post.getAuthorId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getPostStatus(),
+                post.getLikeCount(),
+                isLikedByMe,
+                viewCount,
+                post.getTags().stream()
+                        .distinct()
+                        .map(PostTag::getName)
+                        .toList(),
+                commentCounts
+        );
     }
 }
