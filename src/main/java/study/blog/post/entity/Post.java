@@ -18,6 +18,7 @@ import static org.springframework.util.StringUtils.hasText;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(name = "post", indexes = @Index(name = "idx_view_count", columnList = "view_count"))
 public class Post extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
@@ -174,10 +175,6 @@ public class Post extends BaseEntity {
     public void delete(){
         validatePostStatusToDelete(this.postStatus);
         this.postStatus = PostStatus.DELETED;
-    }
-
-    public void increment(int delta){
-        this.likeCount += delta;
     }
 
 }

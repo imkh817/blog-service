@@ -6,14 +6,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import study.blog.global.lock.DistributedLock;
-import study.blog.post.entity.Post;
 import study.blog.post.exception.PostNotFoundException;
 import study.blog.post.repository.PostRepository;
 
 @Component
 @RequiredArgsConstructor
-public class PostLikeCountUpdater {
+public class PostLikeCountEventHandler {
 
     private final PostRepository postRepository;
 

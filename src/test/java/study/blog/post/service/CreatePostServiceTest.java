@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import study.blog.post.dto.CreatePostDto;
-import study.blog.post.dto.PostResponse;
+import study.blog.post.dto.CreatePostResponse;
 import study.blog.post.entity.Post;
 import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.*;
@@ -59,7 +59,7 @@ class CreatePostServiceTest {
         given(postRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        PostResponse response = postService.createPost(authorId, createPostDto);
+        CreatePostResponse response = postService.createPost(authorId, createPostDto);
 
         //then
         assertThat(response.title()).isEqualTo("테스트 제목");
@@ -186,7 +186,7 @@ class CreatePostServiceTest {
         given(postRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        PostResponse response = postService.createPost(authorId, createPostDto);
+        CreatePostResponse response = postService.createPost(authorId, createPostDto);
 
         // then
         assertThat(response).isNotNull();
