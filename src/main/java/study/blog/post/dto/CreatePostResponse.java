@@ -1,6 +1,7 @@
 package study.blog.post.dto;
 
 import study.blog.post.entity.Post;
+import study.blog.post.entity.PostImage;
 import study.blog.post.entity.PostTag;
 import study.blog.post.enums.PostStatus;
 
@@ -16,7 +17,9 @@ public record CreatePostResponse(
         boolean isLikedByMe,
         long viewCount,
         List<String> tags,
-        long commentCounts
+        long commentCounts,
+        String thumbnailUrl,
+        List<String> imageUrls
 ) {
     public static CreatePostResponse from(Post post){
         return new CreatePostResponse(
@@ -32,7 +35,11 @@ public record CreatePostResponse(
                         .distinct()
                         .map(PostTag::getName)
                         .toList(),
-                0L
+                0L,
+                post.getThumbnailUrl(),
+                post.getPostImages().stream()
+                        .map(PostImage::getImageUrl)
+                        .toList()
         );
     }
 }

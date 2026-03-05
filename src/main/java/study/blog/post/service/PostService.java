@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.blog.comment.repository.CommentQueryRepository;
 import study.blog.like.postlike.repository.PostLikedChecker;
+import study.blog.member.entity.Member;
+import study.blog.member.repository.MemberRepository;
 import study.blog.post.dto.*;
 import study.blog.post.entity.Post;
 import study.blog.post.enums.PostStatus;
@@ -24,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,15 +39,18 @@ public class PostService {
     private final ViewCountReader viewCountReader;
     private final ApplicationEventPublisher eventPublisher;
     private final CommentQueryRepository commentQueryRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
-    public CreatePostResponse createPost(Long authorId, CreatePostDto createPostDto){
+    public CreatePostResponse createPost(Long authorId, CreatePostDto createPostDto) {
         Post post = Post.createPost(
                 authorId,
                 createPostDto.title(),
                 createPostDto.content(),
                 createPostDto.postStatus(),
-                createPostDto.tagNames()
+                createPostDto.tagNames(),
+                createPostDto.thumbnailUrl(),
+                List.of()
         );
         Post savedPost = postRepository.save(post);
         return CreatePostResponse.from(savedPost);
@@ -106,9 +112,12 @@ public class PostService {
         boolean isLikedByMe = memberId != null && postLikedChecker.existsByMemberIdAndPostId(memberId, postId);
 
         publishViewEvent(postId,memberId,request);
-        Long viewCount = viewCountReader.getViewCount(postId) + post.getViewCount();
-        Long commentCount = commentQueryRepository.countCommentByPostId(postId);
-        return PostResponse.from(post, viewCount, isLikedByMe, commentCount);
+        long viewCount = viewCountReader.getViewCount(postId) + post.getViewCount();
+        long commentCount = commentQueryRepository.countCommentByPostId(postId);
+        String authorNickname = memberRepository.findById(post.getAuthorId())
+                .map(Member::getNickname)
+                .orElse("알 수 없음");
+        return PostResponse.from(post, viewCount, authorNickname, isLikedByMe, commentCount);
     }
 
     /**
@@ -127,10 +136,12 @@ public class PostService {
 
         Set<Long> likedPostIds = getLikedPostIds(memberId, posts);
         Map<Long, Long> commentCounts = getCommentCount(posts);
+        Map<Long, String> nicknameMap = getNicknameMap(posts);
 
         List<PostResponse> content = posts.stream()
                 .map(post -> PostResponse.from(
                         post,
+                        nicknameMap.getOrDefault(post.getAuthorId(), "알 수 없음"),
                         likedPostIds.contains(post.getId()),
                         commentCounts.getOrDefault(post.getId(), 0L)
                         )
@@ -150,7 +161,9 @@ public class PostService {
                     "제목 " + i,
                     "본문 " + i,
                     PostStatus.DRAFT,
-                    List.of("Spring" + i, "QueryDSL" + i, "Domain" + i)
+                    List.of("Spring" + i, "QueryDSL" + i, "Domain" + i),
+                    "https://placeholder-thumbnail.jpg",
+                    List.of()
             );
             em.persist(post);
 
@@ -189,10 +202,12 @@ public class PostService {
 
         Set<Long> likedPostIds = getLikedPostIds(memberId, posts);
         Map<Long, Long> commentCounts = getCommentCount(posts);
+        Map<Long, String> nicknameMap = getNicknameMap(posts);
 
         List<PostResponse> content = posts.stream()
                 .map(post -> PostResponse.from(
                                 post,
+                                nicknameMap.getOrDefault(post.getAuthorId(), "알 수 없음"),
                                 likedPostIds.contains(post.getId()),
                                 commentCounts.getOrDefault(post.getId(), 0L)
                         )
@@ -211,5 +226,11 @@ public class PostService {
     private Map<Long, Long> getCommentCount(List<Post> posts){
         List<Long> postIds = posts.stream().map(Post::getId).toList();
         return commentQueryRepository.countCommentByPostIds(postIds);
+    }
+
+    private Map<Long, String> getNicknameMap(List<Post> posts) {
+        List<Long> authorIds = posts.stream().map(Post::getAuthorId).distinct().toList();
+        return memberRepository.findAllById(authorIds).stream()
+                .collect(Collectors.toMap(Member::getId, Member::getNickname));
     }
 }

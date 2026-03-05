@@ -38,23 +38,31 @@ public class Post extends BaseEntity {
 
     private long likeCount;
 
+    private String thumbnailUrl;
+
     @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
     private List<PostTag> tags = new ArrayList<>();
 
-    public static Post createPost(Long authorId, String title, String content, PostStatus postStatus, List<String> tagNames){
+    @OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
+    private List<PostImage> postImages = new ArrayList<>();
+
+    public static Post createPost(Long authorId, String title, String content, PostStatus postStatus, List<String> tagNames, String thumbnailUrl, List<String> imageUrls){
         validateTitle(title);
         validateContent(content);
         validatePostStatusForCreate(postStatus);
         validateTagNames(tagNames);
+        validateThumbnailUrl(thumbnailUrl);
 
         Post post = new Post();
         post.authorId = authorId;
         post.title = title;
         post.content = content;
         post.postStatus = postStatus;
+        post.thumbnailUrl = thumbnailUrl;
         post.viewCount = 0L;
         post.likeCount = 0L;
         post.addTags(tagNames);
+        post.addPostImages(imageUrls);
         return post;
     }
 
@@ -75,12 +83,23 @@ public class Post extends BaseEntity {
         addTags(tags);
     }
 
+    private void addPostImages(List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) return;
+        imageUrls.forEach(url -> postImages.add(PostImage.createPostImage(url, this)));
+    }
+
     private void addTags(List<String> tagNames){
         if(tagNames.isEmpty()) return;
 
         tagNames.stream()
                 .distinct()
                 .forEach(name -> tags.add(PostTag.createPostTag(name, this)));
+    }
+
+    private static void validateThumbnailUrl(String thumbnailUrl) {
+        if (!hasText(thumbnailUrl)) {
+            throw new InValidThumbnailUrlException("대표 이미지는 필수입니다.");
+        }
     }
 
     private static void validateTagNames(List<String> tags){

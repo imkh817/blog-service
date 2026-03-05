@@ -50,7 +50,9 @@ class ModifyPostServiceTest {
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.DRAFT,
-                List.of("Spring", "JPA", "Redis")
+                List.of("Spring", "JPA", "Redis"),
+                "https://test-thumbnail.jpg",
+                List.of()
         );
     }
 

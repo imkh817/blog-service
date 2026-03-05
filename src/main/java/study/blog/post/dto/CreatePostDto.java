@@ -22,8 +22,8 @@ public record CreatePostDto(
 
         @NotEmpty(message = "태그는 최소 1개 이상 등록해야 합니다.")
         @Size(max = 10, message = "태그는 최대 10개까지 등록할 수 있습니다.")
-        List<String> tagNames
-)
-{
+        List<String> tagNames,
 
-}
+        @NotBlank(message = "대표 이미지는 필수입니다.")
+        String thumbnailUrl
+) {}
