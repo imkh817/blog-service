@@ -1,6 +1,5 @@
 package study.blog.post.service;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +11,7 @@ import study.blog.post.dto.CreatePostResponse;
 import study.blog.post.entity.Post;
 import study.blog.post.enums.PostStatus;
 import study.blog.post.exception.*;
-import study.blog.post.repository.PostRepository;
+import study.blog.post.repository.command.PostCommandRepository;
 
 import java.util.List;
 
@@ -24,23 +23,20 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PostService 유스케이스 테스트")
+@DisplayName("PostCommandService 게시글 생성 테스트")
 class CreatePostServiceTest {
 
     @InjectMocks
-    private PostService postService;
+    private PostCommandService postCommandService;
 
     @Mock
-    private PostRepository postRepository;
-
-    @Mock
-    private EntityManager entityManager;
+    private PostCommandRepository postCommandRepository;
 
     private static final String THUMBNAIL_URL = "https://test-bucket.s3.ap-northeast-2.amazonaws.com/thumbnail/test.jpg";
 
     @Test
     @DisplayName("게시글 생성 - 성공")
-    void createPost_success2(){
+    void createPost_success() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -61,12 +57,12 @@ class CreatePostServiceTest {
                 List.of()
         );
 
-        given(postRepository.save(any(Post.class))).willReturn(mockPost);
+        given(postCommandRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        CreatePostResponse response = postService.createPost(authorId, createPostDto);
+        CreatePostResponse response = postCommandService.createPost(authorId, createPostDto);
 
-        //then
+        // then
         assertThat(response.title()).isEqualTo("테스트 제목");
         assertThat(response.content()).isEqualTo("테스트 본문");
         assertThat(response.postStatus()).isEqualTo(PostStatus.DRAFT);
@@ -77,8 +73,8 @@ class CreatePostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 생성 - 제목이 비어있으면 안된다.")
-    void createPost_WithEmptyTitle(){
+    @DisplayName("게시글 생성 - 제목이 비어있으면 안된다")
+    void createPost_emptyTitle() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -91,13 +87,13 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(InValidPostTitleException.class);
     }
 
     @Test
-    @DisplayName("게시글 생성 - 본문이 비어있으면 안된다.")
-    void createPost_WithEmptyContent(){
+    @DisplayName("게시글 생성 - 본문이 비어있으면 안된다")
+    void createPost_emptyContent() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -110,13 +106,13 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(InValidPostContentException.class);
     }
 
     @Test
-    @DisplayName("게시글 생성 - 게시글 상태가 비어있으면 안된다.")
-    void createPost_WithEmptyStatus(){
+    @DisplayName("게시글 생성 - 게시글 상태가 비어있으면 안된다")
+    void createPost_emptyStatus() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -129,13 +125,13 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(InValidPostStatusException.class);
     }
 
     @Test
-    @DisplayName("게시글 생성 - 게시글 상태가 DRAFT 혹은 PUBLISH 여야 한다.")
-    void createPost_WithInvalidStatus(){
+    @DisplayName("게시글 생성 - 게시글 상태는 DRAFT 혹은 PUBLISHED 여야 한다")
+    void createPost_invalidStatus() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -148,13 +144,13 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(InValidPostStatusException.class);
     }
 
     @Test
-    @DisplayName("게시글 생성 - 태그가 비어있으면 안된다.")
-    void createPost_WithEmptyTags() {
+    @DisplayName("게시글 생성 - 태그가 비어있으면 안된다")
+    void createPost_emptyTags() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -167,13 +163,13 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(EmptyTagException.class);
     }
 
     @Test
-    @DisplayName("게시글 생성 - 중복 태그는 제거된다.")
-    void createPost_WithDuplicateTags() {
+    @DisplayName("게시글 생성 - 중복 태그는 제거된다")
+    void createPost_duplicateTags() {
         // given
         Long authorId = 1L;
         CreatePostDto createPostDto = new CreatePostDto(
@@ -194,21 +190,20 @@ class CreatePostServiceTest {
                 List.of()
         );
 
-        given(postRepository.save(any(Post.class))).willReturn(mockPost);
+        given(postCommandRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        CreatePostResponse response = postService.createPost(authorId, createPostDto);
+        CreatePostResponse response = postCommandService.createPost(authorId, createPostDto);
 
         // then
         assertThat(response).isNotNull();
         assertThat(response.tags()).hasSize(2);
         assertThat(response.tags()).containsExactlyInAnyOrder("Java", "Spring");
-
-        then(postRepository).should(times(1)).save(any(Post.class));
+        then(postCommandRepository).should(times(1)).save(any(Post.class));
     }
 
     @Test
-    @DisplayName("게시글 생성 - 태그는 10개를 초과할 수 없다.")
+    @DisplayName("게시글 생성 - 태그는 10개를 초과할 수 없다")
     void createPost_moreThan10Tags() {
         // given
         Long authorId = 1L;
@@ -216,15 +211,34 @@ class CreatePostServiceTest {
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
-                List.of("Java", "Spring", "Java", "Spring"
-                        ,"QueryDSL", "MyBatis", "Oracle", "MySQL"
-                        , "JPA", "Redis", "RabbitMQ"),
+                List.of("Java", "Spring", "JPA", "QueryDSL",
+                        "MyBatis", "Oracle", "MySQL",
+                        "Redis", "RabbitMQ", "Kafka", "Elasticsearch"),
                 THUMBNAIL_URL
         );
 
         // when, then
         assertThatThrownBy(
-                () -> postService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostDto)
         ).isInstanceOf(TooManyTagsException.class);
+    }
+
+    @Test
+    @DisplayName("게시글 생성 - 썸네일 URL이 비어있으면 안된다")
+    void createPost_emptyThumbnailUrl() {
+        // given
+        Long authorId = 1L;
+        CreatePostDto createPostDto = new CreatePostDto(
+                "테스트 제목",
+                "테스트 본문",
+                PostStatus.DRAFT,
+                List.of("Java"),
+                null
+        );
+
+        // when, then
+        assertThatThrownBy(
+                () -> postCommandService.createPost(authorId, createPostDto)
+        ).isInstanceOf(InValidThumbnailUrlException.class);
     }
 }

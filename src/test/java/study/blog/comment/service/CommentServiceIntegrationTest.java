@@ -14,7 +14,8 @@ import study.blog.comment.dto.CreateCommentRequest;
 import study.blog.comment.entity.Comment;
 import study.blog.comment.enums.CommentStatus;
 import study.blog.comment.exception.CommentNotFoundException;
-import study.blog.comment.repository.CommentRepository;
+import study.blog.comment.repository.command.CommentCommandRepository;
+import study.blog.comment.repository.query.CommentQueryRepository;
 import study.blog.global.IntegrationTestSupport;
 import study.blog.member.entity.Member;
 import study.blog.member.repository.MemberRepository;
@@ -24,14 +25,20 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("CommentService 통합 테스트")
+@DisplayName("Comment 서비스 통합 테스트")
 class CommentServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private CommentService commentService;
+    private CommentCommandService commandService;
 
     @Autowired
-    private CommentRepository commentRepository;
+    private CommentQueryService queryService;
+
+    @Autowired
+    private CommentCommandRepository commandRepository;
+
+    @Autowired
+    private CommentQueryRepository queryRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -48,10 +55,11 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         Member member = Member.createMember("test@naver.com", "12345678", "테스트유저10");
         Member savedMember = memberRepository.save(member);
         memberId = savedMember.getId();
-        commentRepository.save(Comment.createComment(POST_ID, memberId, "첫 번째 댓글", null));
-        commentRepository.save(Comment.createComment(POST_ID, memberId, "두 번째 댓글", null));
-        commentRepository.save(Comment.createComment(POST_ID, memberId, "세 번째 댓글", null));
-        commentRepository.save(Comment.createComment(OTHER_POST_ID, memberId, "다른 게시글 댓글", null));
+
+        commandRepository.save(Comment.createComment(POST_ID, memberId, "첫 번째 댓글", null));
+        commandRepository.save(Comment.createComment(POST_ID, memberId, "두 번째 댓글", null));
+        commandRepository.save(Comment.createComment(POST_ID, memberId, "세 번째 댓글", null));
+        commandRepository.save(Comment.createComment(OTHER_POST_ID, memberId, "다른 게시글 댓글", null));
 
         entityManager.flush();
         entityManager.clear();
@@ -68,12 +76,12 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             CreateCommentRequest request = new CreateCommentRequest("새 댓글 내용", null);
 
             // when
-            CommentResponse response = commentService.createComment(POST_ID, memberId, request);
+            CommentResponse response = commandService.createComment(POST_ID, memberId, request);
             entityManager.flush();
             entityManager.clear();
 
             // then
-            Comment saved = commentRepository.findById(response.commentId()).orElseThrow();
+            Comment saved = queryRepository.findById(response.commentId()).orElseThrow();
             assertThat(saved.getContent()).isEqualTo("새 댓글 내용");
             assertThat(saved.getPostId()).isEqualTo(POST_ID);
             assertThat(saved.getAuthorId()).isEqualTo(memberId);
@@ -86,7 +94,7 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             CreateCommentRequest request = new CreateCommentRequest("댓글 내용", null);
 
             // when
-            CommentResponse response = commentService.createComment(POST_ID, memberId, request);
+            CommentResponse response = commandService.createComment(POST_ID, memberId, request);
 
             // then
             assertThat(response.status()).isEqualTo(CommentStatus.ACTIVE);
@@ -99,12 +107,12 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             CreateCommentRequest request = new CreateCommentRequest("댓글 내용", null);
 
             // when
-            CommentResponse response = commentService.createComment(POST_ID, memberId, request);
+            CommentResponse response = commandService.createComment(POST_ID, memberId, request);
             entityManager.flush();
             entityManager.clear();
 
             // then
-            Comment saved = commentRepository.findById(response.commentId()).orElseThrow();
+            Comment saved = queryRepository.findById(response.commentId()).orElseThrow();
             assertThat(saved.getCreatedAt()).isNotNull();
             assertThat(saved.getEditedAt()).isNotNull();
         }
@@ -117,12 +125,12 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             CreateCommentRequest request = new CreateCommentRequest("대댓글 내용", parentCommentId);
 
             // when
-            CommentResponse response = commentService.createComment(POST_ID, memberId, request);
+            CommentResponse response = commandService.createComment(POST_ID, memberId, request);
             entityManager.flush();
             entityManager.clear();
 
             // then
-            Comment saved = commentRepository.findById(response.commentId()).orElseThrow();
+            Comment saved = queryRepository.findById(response.commentId()).orElseThrow();
             assertThat(saved.getParentId()).isEqualTo(parentCommentId);
             assertThat(response.parentId()).isEqualTo(parentCommentId);
         }
@@ -131,15 +139,15 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("댓글 내용이 비어있으면 저장되지 않는다")
         void createComment_emptyContent_doesNotPersist() {
             // given
-            long countBefore = commentRepository.count();
+            long countBefore = commandRepository.count();
             CreateCommentRequest request = new CreateCommentRequest("", null);
 
             // when, then
             assertThatThrownBy(
-                    () -> commentService.createComment(POST_ID, memberId, request)
+                    () -> commandService.createComment(POST_ID, memberId, request)
             ).isInstanceOf(RuntimeException.class);
 
-            assertThat(commentRepository.count()).isEqualTo(countBefore);
+            assertThat(commandRepository.count()).isEqualTo(countBefore);
         }
     }
 
@@ -151,13 +159,13 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("postId와 commentId로 댓글을 정확히 조회한다")
         void findComment_success() {
             // given
-            Comment saved = commentRepository.save(
+            Comment saved = commandRepository.save(
                     Comment.createComment(POST_ID, memberId, "조회 대상 댓글", null));
             entityManager.flush();
             entityManager.clear();
 
             // when
-            CommentResponse response = commentService.findComment(POST_ID, saved.getId());
+            CommentResponse response = queryService.findComment(POST_ID, saved.getId());
 
             // then
             assertThat(response.commentId()).isEqualTo(saved.getId());
@@ -171,14 +179,14 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("다른 게시글의 commentId로 조회하면 CommentNotFoundException이 발생한다")
         void findComment_wrongPostId_throwsException() {
             // given
-            Comment saved = commentRepository.save(
+            Comment saved = commandRepository.save(
                     Comment.createComment(OTHER_POST_ID, memberId, "다른 게시글 댓글", null));
             entityManager.flush();
             entityManager.clear();
 
             // when, then
             assertThatThrownBy(
-                    () -> commentService.findComment(POST_ID, saved.getId())
+                    () -> queryService.findComment(POST_ID, saved.getId())
             ).isInstanceOf(CommentNotFoundException.class);
         }
 
@@ -190,7 +198,7 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
 
             // when, then
             assertThatThrownBy(
-                    () -> commentService.findComment(POST_ID, nonExistentId)
+                    () -> queryService.findComment(POST_ID, nonExistentId)
             ).isInstanceOf(CommentNotFoundException.class)
              .hasMessageContaining("댓글을 찾을 수 없습니다");
         }
@@ -206,10 +214,8 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             // given - setUp: POST_ID 3개, OTHER_POST_ID 1개
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 100));
-
-            System.out.println("responses = " + responses);
 
             // then
             assertThat(responses).hasSize(3);
@@ -226,7 +232,7 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             Long emptyPostId = 999L;
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     emptyPostId, PageRequest.of(0, 10));
 
             // then
@@ -239,7 +245,7 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             // given - setUp: POST_ID 3개, pageSize=2
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 2));
 
             // then
@@ -250,11 +256,11 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @DisplayName("두 번째 페이지를 조회하면 중복 없이 나머지 댓글이 반환된다")
         void findAllCommentWithPaging_secondPage_returnsRemainingComments() {
             // given - setUp: POST_ID 3개, pageSize=2
-            List<CommentViewResponse> firstPage = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> firstPage = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 2));
 
             // when
-            List<CommentViewResponse> secondPage = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> secondPage = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(1, 2));
 
             // then
@@ -272,7 +278,7 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
             // given - setUp: POST_ID 3개
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(100, 10));
 
             // then
@@ -282,18 +288,18 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("createdAt 오름차순으로 정렬하여 조회한다")
         void findAllCommentWithPaging_sortByCreatedAtAsc() throws InterruptedException {
-            // given - setUp 데이터 제거 후 시간 차이를 두고 재생성
-            commentRepository.deleteAll();
+            // given
+            commandRepository.deleteAll();
 
-            Comment older = commentRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
+            Comment older = commandRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
             entityManager.flush();
             Thread.sleep(10);
-            Comment newer = commentRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
+            Comment newer = commandRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
             entityManager.flush();
             entityManager.clear();
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdAt")));
 
             // then
@@ -305,18 +311,18 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("createdAt 내림차순으로 정렬하여 최신 댓글이 먼저 조회된다")
         void findAllCommentWithPaging_sortByCreatedAtDesc() throws InterruptedException {
-            // given - setUp 데이터 제거 후 시간 차이를 두고 재생성
-            commentRepository.deleteAll();
+            // given
+            commandRepository.deleteAll();
 
-            Comment older = commentRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
+            Comment older = commandRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
             entityManager.flush();
             Thread.sleep(10);
-            Comment newer = commentRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
+            Comment newer = commandRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
             entityManager.flush();
             entityManager.clear();
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
 
             // then
@@ -328,18 +334,18 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         @Test
         @DisplayName("지원하지 않는 정렬 기준은 기본 정렬(createdAt 내림차순)로 처리된다")
         void findAllCommentWithPaging_unsupportedSortProperty_fallsBackToDefault() throws InterruptedException {
-            // given - setUp 데이터 제거 후 시간 차이를 두고 재생성
-            commentRepository.deleteAll();
+            // given
+            commandRepository.deleteAll();
 
-            Comment older = commentRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
+            Comment older = commandRepository.save(Comment.createComment(POST_ID, memberId, "오래된 댓글", null));
             entityManager.flush();
             Thread.sleep(10);
-            Comment newer = commentRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
+            Comment newer = commandRepository.save(Comment.createComment(POST_ID, memberId, "최신 댓글", null));
             entityManager.flush();
             entityManager.clear();
 
             // when - 알 수 없는 정렬 속성 사용 시 defaultOrder() (createdAt DESC) 적용
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "unknownField")));
 
             // then
@@ -353,12 +359,12 @@ class CommentServiceIntegrationTest extends IntegrationTestSupport {
         void findAllCommentWithPaging_includesRepliesWithParentId() {
             // given
             Long parentCommentId = 10L;
-            commentRepository.save(Comment.createComment(POST_ID, memberId, "대댓글 내용", parentCommentId));
+            commandRepository.save(Comment.createComment(POST_ID, memberId, "대댓글 내용", parentCommentId));
             entityManager.flush();
             entityManager.clear();
 
             // when
-            List<CommentViewResponse> responses = commentService.findAllCommentWithPaging(
+            List<CommentViewResponse> responses = queryService.findAllCommentWithPaging(
                     POST_ID, PageRequest.of(0, 100));
 
             // then - setUp 3개 + 대댓글 1개

@@ -3,11 +3,12 @@ package study.blog.like.postlike.service;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import study.blog.global.IntegrationTestSupport;
 import study.blog.like.postlike.dto.PostLikeResponse;
+import study.blog.like.postlike.event.PostLikeCountEventHandler;
 import study.blog.like.postlike.exception.DuplicatePostLikeException;
-import study.blog.like.postlike.repository.PostLikeRepository;
+import study.blog.like.postlike.repository.query.PostLikeQueryRepository;
 import study.blog.member.entity.Member;
 import study.blog.member.repository.MemberRepository;
 
@@ -22,14 +23,27 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class PostLikeIntegrationTest extends IntegrationTestSupport {
 
-    @Autowired private PostLikeService postLikeService;
-    @Autowired private PostLikeRepository postLikeRepository;
-    @Autowired private MemberRepository memberRepository;
-    @Autowired private RedisTemplate redisTemplate;
-    private final String KEY_PREFIX = "post:like:count:";
+    @MockitoBean
+    private PostLikeCountEventHandler postLikeCountEventHandler;
+
+    @Autowired
+    private PostLikeCommandService postLikeCommandService;
+
+    @Autowired
+    private PostLikeQueryRepository postLikeQueryRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    /**
+     * PostLike 테이블은 post, member 테이블과 FK 제약이 없으므로 실제 Post/Member 레코드 없이 ID만으로 테스트 가능하다.
+     * 동시성 테스트는 각 스레드가 독립적인 트랜잭션을 생성한다.
+     * 단, @Transactional 테스트 컨텍스트에서 setUp 데이터가 커밋되지 않으므로
+     * 동시성 테스트에서는 테스트 메서드 내에서 직접 데이터를 세팅한다.
+     */
     @Test
-    @DisplayName("100개의 동시 요청이 들어와도 게시글 좋아요가 정확히 처리되는지 검증하는 통합 테스트")
-    void 게시글_좋아요_통합_테스트() throws InterruptedException {
+    @DisplayName("100개의 동시 요청이 들어와도 게시글 좋아요가 정확히 처리된다")
+    void 게시글_좋아요_동시성_테스트() throws InterruptedException {
         // given
         Long postId = 1L;
         List<Long> memberIds = new ArrayList<>();
@@ -41,7 +55,7 @@ public class PostLikeIntegrationTest extends IntegrationTestSupport {
             memberIds.add(member.getId());
         }
 
-        // when
+        // when - 각 스레드는 독립적인 트랜잭션에서 likePost를 호출한다
         ExecutorService executorService = Executors.newFixedThreadPool(10);
         CountDownLatch countDownLatch = new CountDownLatch(100);
 
@@ -49,7 +63,8 @@ public class PostLikeIntegrationTest extends IntegrationTestSupport {
             Long memberId = memberIds.get(i);
             executorService.submit(() -> {
                 try {
-                    PostLikeResponse postLikeResponse = postLikeService.likePost(memberId, postId);
+                    // likePost(postId, memberId) - postId가 첫 번째 인자
+                    postLikeCommandService.likePost(postId, memberId);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -61,30 +76,59 @@ public class PostLikeIntegrationTest extends IntegrationTestSupport {
         countDownLatch.await();
         executorService.shutdown();
 
-        // then
-        Long count = postLikeRepository.countByPostId(postId);
-
+        // then - 100개의 고유한 (postId, memberId) 조합이 저장되어야 한다
+        Long count = postLikeQueryRepository.countByPostId(postId);
         assertThat(count).isEqualTo(100L);
     }
 
     @Test
-    @DisplayName("DB 저장에 실패하면 Redis 카운트도 올라가지 않는다")
-    void DB_저장에_실패하면_Redis_카운트도_올라가지_않는다(){
-        Long postId = 1L;
-        Long memberId = 100L;
-        String key = KEY_PREFIX + postId;
+    @DisplayName("동일한 회원이 같은 게시글에 좋아요를 두 번 누르면 두 번째 시도에서 예외가 발생한다")
+    void 중복_좋아요_예외_발생() {
+        // given
+        Long postId = 100L;
+        Long memberId = 200L;
 
-        redisTemplate.opsForValue().set(key, "0");
-        postLikeService.likePost(memberId, postId);
+        // when
+        postLikeCommandService.likePost(postId, memberId);
 
-        // when: DB 저장 성공 후 이벤트가 발행되므로 DB 저장이 실패하면 Redis도 올라가지 않는다
-        assertThatThrownBy(() -> postLikeService.likePost(memberId, postId))
-                .isInstanceOf(DuplicatePostLikeException.class);
+        // then
+        assertThatThrownBy(() -> postLikeCommandService.likePost(postId, memberId))
+                .isInstanceOf(DuplicatePostLikeException.class)
+                .hasMessageContaining("이미 좋아요를 누른 게시글입니다.");
+    }
 
-        // then: DB에는 1개의 좋아요만 저장됨
-        assertThat(postLikeRepository.countByPostId(postId)).isEqualTo(1L);
+    @Test
+    @DisplayName("좋아요 후 좋아요 수가 정확히 1 증가한다")
+    void 좋아요_후_카운트_증가() {
+        // given
+        Long postId = 200L;
+        Long memberId = 300L;
+        Long beforeCount = postLikeQueryRepository.countByPostId(postId);
 
-        // then: 두 번째 좋아요 시도는 DB 저장 실패 → 이벤트 미발행 → Redis 카운트 유지(1)
-        assertThat(redisTemplate.opsForValue().get(key)).isEqualTo(1L);
+        // when
+        PostLikeResponse response = postLikeCommandService.likePost(postId, memberId);
+
+        // then
+        assertThat(response.likeCount()).isEqualTo(beforeCount + 1);
+        assertThat(response.liked()).isTrue();
+        assertThat(postLikeQueryRepository.countByPostId(postId)).isEqualTo(beforeCount + 1);
+    }
+
+    @Test
+    @DisplayName("좋아요 취소 후 좋아요 수가 정확히 1 감소한다")
+    void 좋아요_취소_후_카운트_감소() {
+        // given
+        Long postId = 300L;
+        Long memberId = 400L;
+        postLikeCommandService.likePost(postId, memberId);
+        Long afterLikeCount = postLikeQueryRepository.countByPostId(postId);
+
+        // when
+        PostLikeResponse response = postLikeCommandService.unlikePost(postId, memberId);
+
+        // then
+        assertThat(response.likeCount()).isEqualTo(afterLikeCount - 1);
+        assertThat(response.liked()).isFalse();
+        assertThat(postLikeQueryRepository.countByPostId(postId)).isEqualTo(afterLikeCount - 1);
     }
 }
