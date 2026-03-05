@@ -53,36 +53,40 @@ class PostIntegrationTest extends IntegrationTestSupport {
     void setUp() {
         Post post1 = postRepository.save(Post.createPost(
                 1L, "Spring 입문 가이드", "Spring Boot를 활용한 웹 개발 입문",
-                PUBLISHED, List.of("Java", "Backend")
+                PUBLISHED, List.of("Java", "Backend"),
+                "https://test-thumbnail.jpg", List.of()
         ));
         postLikeService.likePost(post1.getId(), 1L);
         postLikeService.likePost(post1.getId(), 2L);
 
         postRepository.save(Post.createPost(
                 1L, "QueryDSL 동적 쿼리 작성법", "복잡한 검색 조건을 QueryDSL로 해결하는 방법",
-                PUBLISHED, List.of("Java", "Database")
+                PUBLISHED, List.of("Java", "Database"),
+                "https://test-thumbnail.jpg", List.of()
         ));
-
-
 
         postRepository.save(Post.createPost(
                 1L, "Spring Security 인증 구현", "JWT 기반 인증 흐름을 구현한다",
-                DRAFT, List.of("Java", "Security")
+                DRAFT, List.of("Java", "Security"),
+                "https://test-thumbnail.jpg", List.of()
         ));
 
         postRepository.save(Post.createPost(
                 2L, "DDD 전술적 설계 패턴", "Aggregate와 Repository 패턴을 실무에 적용한다",
-                PUBLISHED, List.of("Architecture", "Backend")
+                PUBLISHED, List.of("Architecture", "Backend"),
+                "https://test-thumbnail.jpg", List.of()
         ));
 
         postRepository.save(Post.createPost(
                 2L, "캐시 전략 정리", "Redis를 활용한 캐시 전략과 TTL 설정 가이드",
-                DRAFT, List.of("Infrastructure", "Backend")
+                DRAFT, List.of("Infrastructure", "Backend"),
+                "https://test-thumbnail.jpg", List.of()
         ));
 
         postRepository.save(Post.createPost(
                 1L, "테스트 코드 작성 전략", "단위 테스트와 통합 테스트의 차이와 작성 전략",
-                PUBLISHED, List.of("Java", "Testing")
+                PUBLISHED, List.of("Java", "Testing"),
+                "https://test-thumbnail.jpg", List.of()
         ));
 
         entityManager.flush();

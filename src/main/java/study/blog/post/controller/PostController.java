@@ -26,7 +26,7 @@ public class PostController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CreatePostResponse> createPost(@LoginMember Long memberId,
-                                                @Valid @RequestBody CreatePostDto createPostDto){
+                                                      @RequestBody @Valid CreatePostDto createPostDto) {
         CreatePostResponse post = postService.createPost(memberId, createPostDto);
         return ApiResponse.success(post);
     }

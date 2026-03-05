@@ -36,6 +36,8 @@ class CreatePostServiceTest {
     @Mock
     private EntityManager entityManager;
 
+    private static final String THUMBNAIL_URL = "https://test-bucket.s3.ap-northeast-2.amazonaws.com/thumbnail/test.jpg";
+
     @Test
     @DisplayName("게시글 생성 - 성공")
     void createPost_success2(){
@@ -45,7 +47,8 @@ class CreatePostServiceTest {
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.DRAFT,
-                List.of("DDD", "Spring", "QueryDSL")
+                List.of("DDD", "Spring", "QueryDSL"),
+                THUMBNAIL_URL
         );
 
         Post mockPost = Post.createPost(
@@ -53,7 +56,9 @@ class CreatePostServiceTest {
                 createPostDto.title(),
                 createPostDto.content(),
                 createPostDto.postStatus(),
-                createPostDto.tagNames()
+                createPostDto.tagNames(),
+                THUMBNAIL_URL,
+                List.of()
         );
 
         given(postRepository.save(any(Post.class))).willReturn(mockPost);
@@ -68,6 +73,7 @@ class CreatePostServiceTest {
         assertThat(response.viewCount()).isEqualTo(0L);
         assertThat(response.tags()).hasSize(3);
         assertThat(response.tags()).containsExactlyInAnyOrder("DDD", "Spring", "QueryDSL");
+        assertThat(response.thumbnailUrl()).isEqualTo(THUMBNAIL_URL);
     }
 
     @Test
@@ -79,7 +85,8 @@ class CreatePostServiceTest {
                 null,
                 "테스트 본문",
                 PostStatus.DRAFT,
-                List.of("DDD", "Spring", "QueryDSL")
+                List.of("DDD", "Spring", "QueryDSL"),
+                THUMBNAIL_URL
         );
 
         // when, then
@@ -97,7 +104,8 @@ class CreatePostServiceTest {
                 "테스트 제목",
                 null,
                 PostStatus.DRAFT,
-                List.of("DDD", "Spring", "QueryDSL")
+                List.of("DDD", "Spring", "QueryDSL"),
+                THUMBNAIL_URL
         );
 
         // when, then
@@ -115,7 +123,8 @@ class CreatePostServiceTest {
                 "테스트 제목",
                 "테스트 본문",
                 null,
-                List.of("DDD", "Spring", "QueryDSL")
+                List.of("DDD", "Spring", "QueryDSL"),
+                THUMBNAIL_URL
         );
 
         // when, then
@@ -133,7 +142,8 @@ class CreatePostServiceTest {
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.HIDDEN,
-                List.of("DDD", "Spring", "QueryDSL")
+                List.of("DDD", "Spring", "QueryDSL"),
+                THUMBNAIL_URL
         );
 
         // when, then
@@ -141,8 +151,6 @@ class CreatePostServiceTest {
                 () -> postService.createPost(authorId, createPostDto)
         ).isInstanceOf(InValidPostStatusException.class);
     }
-
-
 
     @Test
     @DisplayName("게시글 생성 - 태그가 비어있으면 안된다.")
@@ -153,14 +161,14 @@ class CreatePostServiceTest {
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
-                List.of()
+                List.of(),
+                THUMBNAIL_URL
         );
 
         // when, then
         assertThatThrownBy(
                 () -> postService.createPost(authorId, createPostDto)
         ).isInstanceOf(EmptyTagException.class);
-
     }
 
     @Test
@@ -172,7 +180,8 @@ class CreatePostServiceTest {
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
-                List.of("Java", "Spring", "Java", "Spring")
+                List.of("Java", "Spring", "Java", "Spring"),
+                THUMBNAIL_URL
         );
 
         Post mockPost = Post.createPost(
@@ -180,7 +189,9 @@ class CreatePostServiceTest {
                 createPostDto.title(),
                 createPostDto.content(),
                 createPostDto.postStatus(),
-                createPostDto.tagNames()
+                createPostDto.tagNames(),
+                THUMBNAIL_URL,
+                List.of()
         );
 
         given(postRepository.save(any(Post.class))).willReturn(mockPost);
@@ -190,7 +201,7 @@ class CreatePostServiceTest {
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.tags()).hasSize(2);  // 중복 제거됨
+        assertThat(response.tags()).hasSize(2);
         assertThat(response.tags()).containsExactlyInAnyOrder("Java", "Spring");
 
         then(postRepository).should(times(1)).save(any(Post.class));
@@ -207,7 +218,8 @@ class CreatePostServiceTest {
                 PostStatus.PUBLISHED,
                 List.of("Java", "Spring", "Java", "Spring"
                         ,"QueryDSL", "MyBatis", "Oracle", "MySQL"
-                        , "JPA", "Redis", "RabbitMQ")
+                        , "JPA", "Redis", "RabbitMQ"),
+                THUMBNAIL_URL
         );
 
         // when, then
