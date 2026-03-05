@@ -8,12 +8,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import study.blog.global.IntegrationTestSupport;
-import study.blog.like.postlike.service.PostLikeService;
+import study.blog.like.postlike.service.PostLikeCommandService;
 import study.blog.post.dto.PostResponse;
 import study.blog.post.dto.PostSearchCondition;
 import study.blog.post.entity.Post;
-import study.blog.post.repository.PostRepository;
-
+import study.blog.post.repository.command.PostCommandRepository;
 import study.blog.post.infra.ViewCountRedisKeys;
 import study.blog.post.infra.ViewCountService;
 
@@ -31,14 +30,13 @@ import static study.blog.post.enums.PostStatus.*;
 class PostIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
-    private PostService postService;
+    private PostQueryService queryService;
 
     @Autowired
-    private PostLikeService postLikeService;
+    private PostLikeCommandService postLikeCommandService;
 
     @Autowired
-    private PostRepository postRepository;
-
+    private PostCommandRepository postCommandRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -51,39 +49,39 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setUp() {
-        Post post1 = postRepository.save(Post.createPost(
+        Post post1 = postCommandRepository.save(Post.createPost(
                 1L, "Spring 입문 가이드", "Spring Boot를 활용한 웹 개발 입문",
                 PUBLISHED, List.of("Java", "Backend"),
                 "https://test-thumbnail.jpg", List.of()
         ));
-        postLikeService.likePost(post1.getId(), 1L);
-        postLikeService.likePost(post1.getId(), 2L);
+        postLikeCommandService.likePost(post1.getId(), 1L);
+        postLikeCommandService.likePost(post1.getId(), 2L);
 
-        postRepository.save(Post.createPost(
+        postCommandRepository.save(Post.createPost(
                 1L, "QueryDSL 동적 쿼리 작성법", "복잡한 검색 조건을 QueryDSL로 해결하는 방법",
                 PUBLISHED, List.of("Java", "Database"),
                 "https://test-thumbnail.jpg", List.of()
         ));
 
-        postRepository.save(Post.createPost(
+        postCommandRepository.save(Post.createPost(
                 1L, "Spring Security 인증 구현", "JWT 기반 인증 흐름을 구현한다",
                 DRAFT, List.of("Java", "Security"),
                 "https://test-thumbnail.jpg", List.of()
         ));
 
-        postRepository.save(Post.createPost(
+        postCommandRepository.save(Post.createPost(
                 2L, "DDD 전술적 설계 패턴", "Aggregate와 Repository 패턴을 실무에 적용한다",
                 PUBLISHED, List.of("Architecture", "Backend"),
                 "https://test-thumbnail.jpg", List.of()
         ));
 
-        postRepository.save(Post.createPost(
+        postCommandRepository.save(Post.createPost(
                 2L, "캐시 전략 정리", "Redis를 활용한 캐시 전략과 TTL 설정 가이드",
                 DRAFT, List.of("Infrastructure", "Backend"),
                 "https://test-thumbnail.jpg", List.of()
         ));
 
-        postRepository.save(Post.createPost(
+        postCommandRepository.save(Post.createPost(
                 1L, "테스트 코드 작성 전략", "단위 테스트와 통합 테스트의 차이와 작성 전략",
                 PUBLISHED, List.of("Java", "Testing"),
                 "https://test-thumbnail.jpg", List.of()
@@ -106,7 +104,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -124,7 +122,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -142,7 +140,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -160,7 +158,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -181,7 +179,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -199,7 +197,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -217,7 +215,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -239,7 +237,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -260,7 +258,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -286,7 +284,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -310,7 +308,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -326,7 +324,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -348,7 +346,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -365,7 +363,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -383,7 +381,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -400,7 +398,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -417,7 +415,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -438,7 +436,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -456,7 +454,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -474,7 +472,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -503,7 +501,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -525,7 +523,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -547,7 +545,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -568,7 +566,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 2));
 
             // then
@@ -584,9 +582,9 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> firstPage = postService.searchPostByCondition(
+            Page<PostResponse> firstPage = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 2));
-            Page<PostResponse> secondPage = postService.searchPostByCondition(
+            Page<PostResponse> secondPage = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(1, 2));
 
             // then
@@ -607,7 +605,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(100, 10));
 
             // then
@@ -628,7 +626,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(
+            Page<PostResponse> results = queryService.searchPostByCondition(
                     null, condition, PageRequest.of(0, 100));
 
             // then
@@ -650,7 +648,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
+            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -668,7 +666,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
+            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -686,7 +684,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "viewCount"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
+            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -702,7 +700,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "unknownField"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
+            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -720,7 +718,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = postService.searchPostByCondition(null, condition,pageable);
+            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
 
             // then
             assertThat(results).hasSize(3)
@@ -743,8 +741,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest secondPage = PageRequest.of(1, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> firstResults = postService.searchPostByCondition(null, condition,firstPage);
-            Page<PostResponse> secondResults = postService.searchPostByCondition(null, condition,secondPage);
+            Page<PostResponse> firstResults = queryService.searchPostByCondition(null, condition, firstPage);
+            Page<PostResponse> secondResults = queryService.searchPostByCondition(null, condition, secondPage);
 
             // then
             assertThat(firstResults).hasSize(3)
@@ -765,14 +763,70 @@ class PostIntegrationTest extends IntegrationTestSupport {
     }
 
     @Nested
-    @DisplayName("게시글 단건 조회")
-    class PostSearch{
+    @DisplayName("좋아요 상태 조회")
+    class PostLikeSearch {
+
+        @Test
+        @DisplayName("좋아요를 누른 회원으로 조회하면 isLikedByMe=true이다")
+        void 좋아요_누른_회원으로_조회하면_isLikedByMe는_true이다() {
+            // given - setUp에서 memberId=1L이 post1("Spring 입문 가이드")에 좋아요를 눌렀다
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = queryService.searchPostByCondition(
+                    1L, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isTrue();
+        }
+
+        @Test
+        @DisplayName("좋아요를 누르지 않은 회원으로 조회하면 isLikedByMe=false이다")
+        void 좋아요_안_누른_회원으로_조회하면_isLikedByMe는_false이다() {
+            // given - memberId=3L은 setUp에서 어떤 게시글에도 좋아요를 누르지 않았다
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = queryService.searchPostByCondition(
+                    3L, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
+        }
+
+        @Test
+        @DisplayName("로그인하지 않은 상태(memberId=null)로 조회하면 isLikedByMe=false이다")
+        void 비로그인_조회시_isLikedByMe는_false이다() {
+            // given
+            PostSearchCondition condition = new PostSearchCondition(
+                    "Spring 입문 가이드", null, null, null, null
+            );
+
+            // when
+            Page<PostResponse> results = queryService.searchPostByCondition(
+                    null, condition, PageRequest.of(0, 10));
+
+            // then
+            assertThat(results).hasSize(1);
+            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("조회수 Redis TPS 검증")
+    class ViewCountTest {
 
         @Test
         @DisplayName("조회수 증가 Redis TPS 확인")
         void Redis_TPS_확인() throws InterruptedException {
             // given
-            Post post = postRepository.findAll().getFirst();
+            Post post = postCommandRepository.findAll().getFirst();
             Long postId = post.getId();
 
             int totalRequests = 1000;
@@ -810,29 +864,30 @@ class PostIntegrationTest extends IntegrationTestSupport {
             System.out.printf("[TPS 측정] 총 %,d건 / %.3f초 → TPS %.0f%n",
                     totalRequests, elapsedMs / 1000.0, tps);
 
-            // Redis INCR의 원자성 보장 검증 - race condition 없이 정확히 totalRequests만큼 증가해야 한다
             assertThat(actualCount).isEqualTo(totalRequests);
         }
 
         @Test
-        void increaseViewCount_throughput_experiment() throws Exception {
-            Long postId = postRepository.findAll().getFirst().getId();
+        @DisplayName("중복 조회 방지 정책 적용 시 고유 사용자 수만큼만 조회수가 증가한다")
+        void 중복_제거_후_고유_조회수_확인() throws Exception {
+            // given
+            Long postId = postCommandRepository.findAll().getFirst().getId();
 
-            int uniqueUsers = 1_000;    // 고유 사용자 수 = 유효 조회 수
-            int requestsPerUser = 100;  // 사용자당 재요청 횟수 (중복 시뮬레이션)
+            int uniqueUsers = 1_000;
+            int requestsPerUser = 100;
             int total = uniqueUsers * requestsPerUser;
             int threads = 8;
 
             CountDownLatch done = new CountDownLatch(total);
             long startNs = System.nanoTime();
 
+            // when
             try (ExecutorService executor = Executors.newFixedThreadPool(threads)) {
                 for (int i = 0; i < uniqueUsers; i++) {
                     String identifier = "user:" + i;
                     for (int j = 0; j < requestsPerUser; j++) {
                         executor.submit(() -> {
                             try {
-                                // ViewCountEventHandler의 실제 처리 플로우 재현
                                 if (!viewCountService.isDuplicated(postId, identifier)) {
                                     viewCountService.increaseViewCount(postId);
                                 }
@@ -854,7 +909,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             System.out.printf("[실험] 총 %,d건 (고유 사용자 %,d명 × %d회) / 총 걸린 시간: %.2fs → 초당 처리량: %.0f ops/s%n",
                     total, uniqueUsers, requestsPerUser, sec, tps);
 
-            // 중복 제거 후 고유 사용자 수만큼만 조회수가 증가해야 한다
+            // then
             String key = ViewCountRedisKeys.getViewCountKey(postId);
             String rawCount = stringRedisTemplate.opsForValue().get(key);
             assertThat(rawCount).as("Redis 조회수 키가 존재해야 한다").isNotNull();
@@ -862,91 +917,6 @@ class PostIntegrationTest extends IntegrationTestSupport {
             Long actualCount = Long.parseLong(rawCount);
             System.out.printf("[결과] 기대 조회수: %,d / 실제 조회수: %,d%n", (long) uniqueUsers, actualCount);
             assertThat(actualCount).isEqualTo(uniqueUsers);
-        }
-    }
-
-    @Nested
-    @DisplayName("좋아요를 Redis에서 잘 가져오는 검색")
-    class PostLikeSearch {
-
-//        @Test
-//        @DisplayName("Redis에 캐시된 좋아요 수가 조회 응답에 반영된다")
-//        void Redis에_캐시된_좋아요_수가_조회_응답에_반영된다() {
-//            // given
-//            // @Transactional 테스트 환경에서 AFTER_COMMIT 이벤트가 발생하지 않아
-//            // setUp의 likePost 호출은 Redis를 업데이트하지 않는다.
-//            // → Redis에 직접 값을 세팅하여 조회 시 읽기 경로를 검증한다.
-//            Post post1 = postRepository.findAll().stream()
-//                    .filter(p -> p.getTitle().equals("Spring 입문 가이드"))
-//                    .findFirst().orElseThrow();
-//
-//            stringRedisTemplate.opsForValue()
-//                    .set(PostLikeRedisKeys.postLikeCount(post1.getId()), "2");
-//
-//            PostSearchCondition condition = new PostSearchCondition(
-//                    "Spring 입문 가이드", null, null, null, null
-//            );
-//
-//            // when
-//            Page<PostResponse> results = postService.searchPostByCondition(
-//                    null, condition, PageRequest.of(0, 10));
-//
-//            // then
-//            assertThat(results).hasSize(1);
-//            assertThat(results.getContent().get(0).likeCount()).isEqualTo(2L);
-//        }
-
-        @Test
-        @DisplayName("좋아요를 누른 회원으로 조회하면 isLikedByMe=true이다")
-        void 좋아요_누른_회원으로_조회하면_isLikedByMe는_true이다() {
-            // given
-            // setUp에서 memberId=1L이 post1("Spring 입문 가이드")에 좋아요를 눌렀다
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = postService.searchPostByCondition(
-                    1L, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isTrue();
-        }
-
-        @Test
-        @DisplayName("좋아요를 누르지 않은 회원으로 조회하면 isLikedByMe=false이다")
-        void 좋아요_안_누른_회원으로_조회하면_isLikedByMe는_false이다() {
-            // given
-            // memberId=3L은 setUp에서 어떤 게시글에도 좋아요를 누르지 않았다
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = postService.searchPostByCondition(
-                    3L, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
-        }
-
-        @Test
-        @DisplayName("로그인하지 않은 상태(memberId=null)로 조회하면 isLikedByMe=false이다")
-        void 비로그인_조회시_isLikedByMe는_false이다() {
-            // given
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = postService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
         }
     }
 }

@@ -1,4 +1,4 @@
-package study.blog.like.postlike.repository;
+package study.blog.like.postlike.repository.query;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -9,7 +9,7 @@ import java.util.List;
 import static study.blog.like.postlike.entity.QPostLike.postLike;
 
 @RequiredArgsConstructor
-public class PostLikeRepositoryCustomImpl implements PostLikeRepositoryCustom{
+public class PostLikeQueryRepositoryCustomImpl implements PostLikeQueryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 

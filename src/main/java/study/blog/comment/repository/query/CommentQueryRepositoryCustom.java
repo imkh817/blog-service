@@ -1,4 +1,4 @@
-package study.blog.comment.repository;
+package study.blog.comment.repository.query;
 
 import org.springframework.data.domain.Pageable;
 import study.blog.comment.dto.CommentViewResponse;
@@ -6,8 +6,8 @@ import study.blog.comment.dto.CommentViewResponse;
 import java.util.List;
 import java.util.Map;
 
-public interface CommentQueryRepository{
-    public List<CommentViewResponse> findAllCommentsWithPaging(Long postId, Pageable pageable);
+public interface CommentQueryRepositoryCustom {
+    List<CommentViewResponse> findAllCommentsWithPaging(Long postId, Pageable pageable);
 
     Map<Long, Long> countCommentByPostIds(List<Long> postIds);
 

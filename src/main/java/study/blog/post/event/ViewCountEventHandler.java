@@ -28,10 +28,6 @@ public class ViewCountEventHandler {
     @Async(value = "viewEventExecutor")
     @EventListener
     public void handle(PostViewedEvent event){
-        if(viewCountService.isDuplicated(event.postId(), event.identifier())){
-            return;
-        }
-
         viewCountService.increaseViewCount(event.postId());
     }
 

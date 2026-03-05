@@ -1,8 +1,8 @@
 package study.blog.post.event;
 
 public record PostViewedEvent(
-        Long postId,
         Long memberId,
+        Long postId,
         String ip
 ) {
 

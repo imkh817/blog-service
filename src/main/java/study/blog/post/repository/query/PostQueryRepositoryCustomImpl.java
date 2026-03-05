@@ -1,4 +1,4 @@
-package study.blog.post.repository;
+package study.blog.post.repository.query;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -25,12 +25,13 @@ import static study.blog.post.entity.QPost.post;
 import static study.blog.post.entity.QPostTag.postTag;
 
 @RequiredArgsConstructor
-public class PostRepositoryCustomImpl implements PostRepositoryCustom {
+public class PostQueryRepositoryCustomImpl implements PostQueryRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
     public List<Post> searchMemberPosts(Long memberId, PostSearchCondition condition, Pageable pageable) {
+        // 마이페이지/내 글 목록: "작성자" + "상태" 조건으로만 단순 조회 (페이징/정렬 포함)
         return queryFactory
                 .select(post)
                 .from(post)
@@ -46,6 +47,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     @Override
     public long countMemberPosts(Long memberId, PostSearchCondition condition) {
+        // 목록 조회 쿼리와 count 쿼리를 분리한다.
+        // (검색 조건/조인 확장 시 count 성능 저하 가능성이 커, 필요 시 count 최적화 포인트를 분리해두기 위함)
         return Objects.requireNonNullElse(
                 queryFactory
                         .select(post.count())
@@ -59,7 +62,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     }
 
     @Override
-    public List<Post> searchPostsByCondition(Long memberId, PostSearchCondition condition, Pageable pageable) {
+    public List<Post> searchPostsByCondition(PostSearchCondition condition, Pageable pageable) {
+        // 검색 목록: 키워드/태그/상태/기간 등 조합 조건을 지원 (페이징/정렬 포함)
         return queryFactory
                 .select(post)
                 .from(post)
@@ -78,6 +82,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     @Override
     public long countPostByCondition(PostSearchCondition condition) {
+        // 목록 조회 쿼리와 count 쿼리를 분리한다.
+        // (검색 조건/조인 확장 시 count 성능 저하 가능성이 커, 필요 시 count 최적화 포인트를 분리해두기 위함)
         return Objects.requireNonNullElse(
                 queryFactory
                         .select(post.count())
@@ -92,45 +98,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 0L
         );
     }
-
-    /**
-     * 게시글 좋아요수를 원자적으로 증가
-     *
-     * 조회 후 엔티티 수정하는 방식이 아니라,
-     * DB 레벨에서 원자적으로 update를 수행하여 동시성 환경에서 안전하게 처리
-     *
-     * @param postId 조회수를 증가시킬 게시글 ID
-     * @param delta 증가시킬 좋아요 수 (음수 가능)
-     * @return 영향받은 Row 수
-     */
-    @Override
-    public long incrementLikeCount(Long postId, int delta) {
-        return queryFactory
-                .update(post)
-                .set(post.likeCount, post.likeCount.add(delta))
-                .where(post.id.eq(postId))
-                .execute();
-    }
-
-    /**
-     * 게시글 조회수를 원자적으로 증가
-     *
-     * 조회 후 엔티티 수정하는 방식이 아니라,
-     * DB 레벨에서 원자적으로 update를 수행하여 동시성 환경에서 안전하게 처리
-     *
-     * @param postId 조회수를 증가시킬 게시글 ID
-     * @param viewCount 증가시킬 수치
-     * @return 영향받은 Row 수
-     */
-    @Override
-    public long incrementViewCount(Long postId, long viewCount) {
-        return queryFactory
-                .update(post)
-                .set(post.viewCount, post.viewCount.add(viewCount))
-                .where(post.id.eq(postId))
-                .execute();
-    }
-
 
     private BooleanExpression keywordLike(String keyword) {
         return hasText(keyword) ? post.content.contains(keyword).or(post.title.contains(keyword)) : null;
