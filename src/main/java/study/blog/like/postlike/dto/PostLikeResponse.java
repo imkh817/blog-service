@@ -1,8 +1,5 @@
 package study.blog.like.postlike.dto;
 
-import study.blog.like.postlike.entity.PostLike;
-import study.blog.post.entity.Post;
-
 public record PostLikeResponse(
         Long postId,
         Long likeCount,

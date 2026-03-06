@@ -3,7 +3,6 @@ package study.blog.member.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import study.blog.member.entity.Member;
-import study.blog.post.entity.Post;
 
 import java.util.List;
 import java.util.Map;

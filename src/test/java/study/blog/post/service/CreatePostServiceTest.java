@@ -6,12 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import study.blog.post.dto.CreatePostDto;
-import study.blog.post.dto.CreatePostResponse;
-import study.blog.post.entity.Post;
-import study.blog.post.enums.PostStatus;
-import study.blog.post.exception.*;
-import study.blog.post.repository.command.PostCommandRepository;
+import study.blog.post.application.PostCommandService;
+import study.blog.post.domain.exception.*;
+import study.blog.post.presentation.requset.CreatePostRequest;
+import study.blog.post.presentation.response.PostSaveResponse;
+import study.blog.post.domain.entity.Post;
+import study.blog.post.domain.PostStatus;
+import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ class CreatePostServiceTest {
     void createPost_success() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.DRAFT,
@@ -49,10 +50,10 @@ class CreatePostServiceTest {
 
         Post mockPost = Post.createPost(
                 authorId,
-                createPostDto.title(),
-                createPostDto.content(),
-                createPostDto.postStatus(),
-                createPostDto.tagNames(),
+                createPostRequest.title(),
+                createPostRequest.content(),
+                createPostRequest.postStatus(),
+                createPostRequest.tagNames(),
                 THUMBNAIL_URL,
                 List.of()
         );
@@ -60,7 +61,7 @@ class CreatePostServiceTest {
         given(postCommandRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        CreatePostResponse response = postCommandService.createPost(authorId, createPostDto);
+        PostSaveResponse response = postCommandService.createPost(authorId, createPostRequest);
 
         // then
         assertThat(response.title()).isEqualTo("테스트 제목");
@@ -77,7 +78,7 @@ class CreatePostServiceTest {
     void createPost_emptyTitle() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 null,
                 "테스트 본문",
                 PostStatus.DRAFT,
@@ -87,7 +88,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(InValidPostTitleException.class);
     }
 
@@ -96,7 +97,7 @@ class CreatePostServiceTest {
     void createPost_emptyContent() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "테스트 제목",
                 null,
                 PostStatus.DRAFT,
@@ -106,7 +107,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(InValidPostContentException.class);
     }
 
@@ -115,7 +116,7 @@ class CreatePostServiceTest {
     void createPost_emptyStatus() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "테스트 제목",
                 "테스트 본문",
                 null,
@@ -125,7 +126,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(InValidPostStatusException.class);
     }
 
@@ -134,7 +135,7 @@ class CreatePostServiceTest {
     void createPost_invalidStatus() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.HIDDEN,
@@ -144,7 +145,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(InValidPostStatusException.class);
     }
 
@@ -153,7 +154,7 @@ class CreatePostServiceTest {
     void createPost_emptyTags() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
@@ -163,7 +164,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(EmptyTagException.class);
     }
 
@@ -172,7 +173,7 @@ class CreatePostServiceTest {
     void createPost_duplicateTags() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
@@ -182,10 +183,10 @@ class CreatePostServiceTest {
 
         Post mockPost = Post.createPost(
                 authorId,
-                createPostDto.title(),
-                createPostDto.content(),
-                createPostDto.postStatus(),
-                createPostDto.tagNames(),
+                createPostRequest.title(),
+                createPostRequest.content(),
+                createPostRequest.postStatus(),
+                createPostRequest.tagNames(),
                 THUMBNAIL_URL,
                 List.of()
         );
@@ -193,7 +194,7 @@ class CreatePostServiceTest {
         given(postCommandRepository.save(any(Post.class))).willReturn(mockPost);
 
         // when
-        CreatePostResponse response = postCommandService.createPost(authorId, createPostDto);
+        PostSaveResponse response = postCommandService.createPost(authorId, createPostRequest);
 
         // then
         assertThat(response).isNotNull();
@@ -207,7 +208,7 @@ class CreatePostServiceTest {
     void createPost_moreThan10Tags() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "제목",
                 "본문",
                 PostStatus.PUBLISHED,
@@ -219,7 +220,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(TooManyTagsException.class);
     }
 
@@ -228,7 +229,7 @@ class CreatePostServiceTest {
     void createPost_emptyThumbnailUrl() {
         // given
         Long authorId = 1L;
-        CreatePostDto createPostDto = new CreatePostDto(
+        CreatePostRequest createPostRequest = new CreatePostRequest(
                 "테스트 제목",
                 "테스트 본문",
                 PostStatus.DRAFT,
@@ -238,7 +239,7 @@ class CreatePostServiceTest {
 
         // when, then
         assertThatThrownBy(
-                () -> postCommandService.createPost(authorId, createPostDto)
+                () -> postCommandService.createPost(authorId, createPostRequest)
         ).isInstanceOf(InValidThumbnailUrlException.class);
     }
 }

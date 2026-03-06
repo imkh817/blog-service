@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import study.blog.post.exception.PostNotFoundException;
-import study.blog.post.repository.command.PostCommandRepository;
+import study.blog.post.domain.exception.PostNotFoundException;
+import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
 
 @Component
 @RequiredArgsConstructor
