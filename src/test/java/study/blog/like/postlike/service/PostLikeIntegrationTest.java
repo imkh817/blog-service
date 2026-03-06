@@ -5,12 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import study.blog.global.IntegrationTestSupport;
-import study.blog.like.postlike.dto.PostLikeResponse;
-import study.blog.like.postlike.event.PostLikeCountEventHandler;
-import study.blog.like.postlike.exception.DuplicatePostLikeException;
-import study.blog.like.postlike.repository.query.PostLikeQueryRepository;
+import study.blog.postlike.presentation.response.PostLikeResponse;
+import study.blog.postlike.infrastructure.event.PostLikedEventListener;
+import study.blog.postlike.domain.exception.DuplicatePostLikeException;
+import study.blog.postlike.infrastructure.persistence.query.PostLikeQueryRepository;
 import study.blog.member.entity.Member;
 import study.blog.member.repository.MemberRepository;
+import study.blog.postlike.application.PostLikeCommandService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 public class PostLikeIntegrationTest extends IntegrationTestSupport {
 
     @MockitoBean
-    private PostLikeCountEventHandler postLikeCountEventHandler;
+    private PostLikedEventListener postLikedEventListener;
 
     @Autowired
     private PostLikeCommandService postLikeCommandService;

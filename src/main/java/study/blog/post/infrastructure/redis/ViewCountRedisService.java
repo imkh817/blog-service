@@ -16,4 +16,5 @@ public class ViewCountRedisService implements ViewCountService {
         String key = generateViewCountKey(postId);
         redisTemplate.opsForValue().increment(key);
     }
+
 }

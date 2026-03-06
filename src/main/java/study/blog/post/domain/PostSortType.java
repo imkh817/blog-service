@@ -3,7 +3,7 @@ package study.blog.post.domain;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import org.springframework.data.domain.Sort;
-import study.blog.post.entity.QPost;
+import study.blog.post.domain.entity.QPost;
 
 import java.util.Arrays;
 import java.util.Optional;
