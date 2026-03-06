@@ -12,7 +12,7 @@ import org.springframework.util.StringUtils;
 import study.blog.post.domain.PostSortType;
 import study.blog.post.domain.PostStatus;
 import study.blog.post.domain.entity.Post;
-import study.blog.post.entity.QPostTag;
+import study.blog.post.domain.entity.QPostTag;
 import study.blog.post.presentation.requset.PostSearchCondition;
 
 import java.time.LocalDateTime;
@@ -21,8 +21,8 @@ import java.util.Objects;
 
 import static org.springframework.util.ObjectUtils.isEmpty;
 import static org.springframework.util.StringUtils.hasText;
-import static study.blog.post.entity.QPost.post;
-import static study.blog.post.entity.QPostTag.postTag;
+import static study.blog.post.domain.entity.QPost.post;
+import static study.blog.post.domain.entity.QPostTag.postTag;
 
 @RequiredArgsConstructor
 public class PostQueryRepositoryCustomImpl implements PostQueryRepositoryCustom {

@@ -3,7 +3,7 @@ package study.blog.post.infrastructure.persistence.command;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import static study.blog.post.entity.QPost.post;
+import static study.blog.post.domain.entity.QPost.post;
 
 @RequiredArgsConstructor
 public class PostCommandRepositoryCustomImpl implements PostCommandRepositoryCustom{

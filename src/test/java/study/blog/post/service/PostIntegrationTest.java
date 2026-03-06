@@ -8,11 +8,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import study.blog.global.IntegrationTestSupport;
-import study.blog.like.postlike.service.PostLikeCommandService;
+import study.blog.postlike.application.PostLikeCommandService;
 import study.blog.post.application.PostQueryService;
 import study.blog.post.presentation.requset.PostSearchCondition;
 import study.blog.post.presentation.response.PostSummaryResponse;
 import study.blog.post.domain.entity.Post;
+import study.blog.post.domain.event.PostViewedEvent;
+import study.blog.post.domain.policy.ViewCountDeDuplicationPolicy;
 import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
 import study.blog.post.infrastructure.redis.ViewCountRedisKeyGenerator;
 import study.blog.post.application.ViewCountService;
@@ -47,6 +49,9 @@ class PostIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private ViewCountService viewCountService;
+
+    @Autowired
+    private ViewCountDeDuplicationPolicy deDuplicationPolicy;
 
     @BeforeEach
     void setUp() {
@@ -829,11 +834,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             // when
             try (ExecutorService executor = Executors.newFixedThreadPool(threads)) {
                 for (int i = 0; i < uniqueUsers; i++) {
-                    String identifier = "user:" + i;
+                    long userId = i;
                     for (int j = 0; j < requestsPerUser; j++) {
                         executor.submit(() -> {
                             try {
-                                if (!viewCountService.isDuplicated(postId, identifier)) {
+                                PostViewedEvent event = new PostViewedEvent(userId, postId, null);
+                                if (deDuplicationPolicy.allow(event)) {
                                     viewCountService.increaseViewCount(postId);
                                 }
                             } finally {
