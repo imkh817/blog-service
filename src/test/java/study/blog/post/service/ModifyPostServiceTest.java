@@ -7,13 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import study.blog.post.dto.ModifyPostResponse;
-import study.blog.post.dto.UpdatePostDto;
-import study.blog.post.entity.Post;
-import study.blog.post.enums.PostStatus;
-import study.blog.post.exception.InValidPostStatusException;
-import study.blog.post.exception.PostNotFoundException;
-import study.blog.post.repository.command.PostCommandRepository;
+import study.blog.post.application.PostCommandService;
+import study.blog.post.presentation.response.PostSaveResponse;
+import study.blog.post.presentation.requset.UpdatePostRequest;
+import study.blog.post.domain.entity.Post;
+import study.blog.post.domain.PostStatus;
+import study.blog.post.domain.exception.InValidPostStatusException;
+import study.blog.post.domain.exception.PostNotFoundException;
+import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +56,7 @@ class ModifyPostServiceTest {
     @DisplayName("게시글 수정 - 성공")
     void modifyPost_success() {
         // given
-        UpdatePostDto updatePostDto = new UpdatePostDto(
+        UpdatePostRequest updatePostRequest = new UpdatePostRequest(
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
@@ -65,7 +66,7 @@ class ModifyPostServiceTest {
         when(postCommandRepository.findById(any(Long.class))).thenReturn(Optional.of(existingPost));
 
         // when
-        ModifyPostResponse response = postCommandService.modifyPost(authorId, updatePostDto);
+        PostSaveResponse response = postCommandService.modifyPost(authorId, updatePostRequest);
 
         // then
         assertThat(response.title()).isEqualTo("테스트 제목(수정)");
@@ -81,7 +82,7 @@ class ModifyPostServiceTest {
     @DisplayName("삭제된 게시글은 수정하지 못한다")
     void modifyPost_deletedPost() {
         // given
-        UpdatePostDto updatePostDto = new UpdatePostDto(
+        UpdatePostRequest updatePostRequest = new UpdatePostRequest(
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
@@ -92,7 +93,7 @@ class ModifyPostServiceTest {
         when(postCommandRepository.findById(any(Long.class))).thenReturn(Optional.of(existingPost));
 
         // when, then
-        assertThatThrownBy(() -> postCommandService.modifyPost(authorId, updatePostDto))
+        assertThatThrownBy(() -> postCommandService.modifyPost(authorId, updatePostRequest))
                 .isInstanceOf(InValidPostStatusException.class)
                 .hasMessageContaining("삭제된 게시글은 수정할 수 없습니다.");
     }
@@ -101,7 +102,7 @@ class ModifyPostServiceTest {
     @DisplayName("존재하지 않는 게시글은 수정하지 못한다")
     void modifyPost_notFound() {
         // given
-        UpdatePostDto updatePostDto = new UpdatePostDto(
+        UpdatePostRequest updatePostRequest = new UpdatePostRequest(
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
@@ -111,7 +112,7 @@ class ModifyPostServiceTest {
         when(postCommandRepository.findById(any(Long.class))).thenReturn(Optional.empty());
 
         // when, then
-        assertThatThrownBy(() -> postCommandService.modifyPost(authorId, updatePostDto))
+        assertThatThrownBy(() -> postCommandService.modifyPost(authorId, updatePostRequest))
                 .isInstanceOf(PostNotFoundException.class);
     }
 

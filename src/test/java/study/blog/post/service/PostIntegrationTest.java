@@ -9,12 +9,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import study.blog.global.IntegrationTestSupport;
 import study.blog.like.postlike.service.PostLikeCommandService;
-import study.blog.post.dto.PostResponse;
-import study.blog.post.dto.PostSearchCondition;
-import study.blog.post.entity.Post;
-import study.blog.post.repository.command.PostCommandRepository;
-import study.blog.post.infra.ViewCountRedisKeys;
-import study.blog.post.infra.ViewCountService;
+import study.blog.post.application.PostQueryService;
+import study.blog.post.presentation.requset.PostSearchCondition;
+import study.blog.post.presentation.response.PostSummaryResponse;
+import study.blog.post.domain.entity.Post;
+import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
+import study.blog.post.infrastructure.redis.ViewCountRedisKeyGenerator;
+import study.blog.post.application.ViewCountService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static study.blog.post.enums.PostStatus.*;
+import static study.blog.post.domain.PostStatus.*;
 
 class PostIntegrationTest extends IntegrationTestSupport {
 
@@ -104,12 +105,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder("Spring 입문 가이드", "Spring Security 인증 구현");
         }
 
@@ -122,12 +123,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly("캐시 전략 정리");
         }
 
@@ -140,12 +141,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly("테스트 코드 작성 전략");
         }
 
@@ -158,8 +159,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -179,12 +180,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly("Spring Security 인증 구현");
         }
 
@@ -197,12 +198,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder("QueryDSL 동적 쿼리 작성법", "테스트 코드 작성 전략");
         }
 
@@ -215,12 +216,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(3)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder(
                             "Spring 입문 가이드",
                             "DDD 전술적 설계 패턴",
@@ -237,8 +238,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -258,15 +259,15 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(4)
                     .allSatisfy(response ->
                             assertThat(response.postStatus()).isEqualTo(PUBLISHED)
                     )
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder(
                             "Spring 입문 가이드",
                             "QueryDSL 동적 쿼리 작성법",
@@ -284,15 +285,15 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(2)
                     .allSatisfy(response ->
                             assertThat(response.postStatus()).isEqualTo(DRAFT)
                     )
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder(
                             "Spring Security 인증 구현",
                             "캐시 전략 정리"
@@ -308,8 +309,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -324,8 +325,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -346,8 +347,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -363,8 +364,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -381,8 +382,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -398,8 +399,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -415,8 +416,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -436,12 +437,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title, PostResponse::postStatus)
+                    .extracting(PostSummaryResponse::title, PostSummaryResponse::postStatus)
                     .containsExactly(tuple("Spring 입문 가이드", PUBLISHED));
         }
 
@@ -454,12 +455,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly("Spring 입문 가이드");
         }
 
@@ -472,15 +473,15 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(3)
                     .allSatisfy(response ->
                             assertThat(response.postStatus()).isEqualTo(PUBLISHED)
                     )
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactlyInAnyOrder(
                             "Spring 입문 가이드",
                             "QueryDSL 동적 쿼리 작성법",
@@ -501,12 +502,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title, PostResponse::postStatus)
+                    .extracting(PostSummaryResponse::title, PostSummaryResponse::postStatus)
                     .containsExactly(tuple("Spring 입문 가이드", PUBLISHED));
         }
 
@@ -523,12 +524,12 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(1)
-                    .extracting(PostResponse::title, PostResponse::postStatus)
+                    .extracting(PostSummaryResponse::title, PostSummaryResponse::postStatus)
                     .containsExactly(tuple("Spring 입문 가이드", PUBLISHED));
         }
 
@@ -545,8 +546,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).isEmpty();
@@ -566,8 +567,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 2));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 2));
 
             // then
             assertThat(results).hasSize(2);
@@ -582,17 +583,17 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> firstPage = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 2));
-            Page<PostResponse> secondPage = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(1, 2));
+            Page<PostSummaryResponse> firstPage = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 2));
+            Page<PostSummaryResponse> secondPage = queryService.searchPostByCondition(
+                    condition, PageRequest.of(1, 2));
 
             // then
             assertThat(firstPage).hasSize(2);
             assertThat(secondPage).hasSize(1);
 
-            List<Long> firstPageIds = firstPage.stream().map(PostResponse::postId).toList();
-            List<Long> secondPageIds = secondPage.stream().map(PostResponse::postId).toList();
+            List<Long> firstPageIds = firstPage.stream().map(PostSummaryResponse::postId).toList();
+            List<Long> secondPageIds = secondPage.stream().map(PostSummaryResponse::postId).toList();
             assertThat(firstPageIds).doesNotContainAnyElementsOf(secondPageIds);
         }
 
@@ -605,8 +606,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(100, 10));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(100, 10));
 
             // then
             assertThat(results).isEmpty();
@@ -626,8 +627,8 @@ class PostIntegrationTest extends IntegrationTestSupport {
             );
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 100));
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(
+                    condition, PageRequest.of(0, 100));
 
             // then
             assertThat(results).hasSize(6);
@@ -648,7 +649,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -666,7 +667,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -684,7 +685,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "viewCount"));
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -700,7 +701,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "unknownField"));
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(6);
@@ -718,11 +719,11 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> results = queryService.searchPostByCondition(null, condition, pageable);
+            Page<PostSummaryResponse> results = queryService.searchPostByCondition(condition, pageable);
 
             // then
             assertThat(results).hasSize(3)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly(
                             "Spring 입문 가이드",
                             "QueryDSL 동적 쿼리 작성법",
@@ -741,80 +742,24 @@ class PostIntegrationTest extends IntegrationTestSupport {
             PageRequest secondPage = PageRequest.of(1, 3, Sort.by(Sort.Direction.ASC, "createdAt"));
 
             // when
-            Page<PostResponse> firstResults = queryService.searchPostByCondition(null, condition, firstPage);
-            Page<PostResponse> secondResults = queryService.searchPostByCondition(null, condition, secondPage);
+            Page<PostSummaryResponse> firstResults = queryService.searchPostByCondition(condition, firstPage);
+            Page<PostSummaryResponse> secondResults = queryService.searchPostByCondition(condition, secondPage);
 
             // then
             assertThat(firstResults).hasSize(3)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly(
                             "Spring 입문 가이드",
                             "QueryDSL 동적 쿼리 작성법",
                             "Spring Security 인증 구현"
                     );
             assertThat(secondResults).hasSize(3)
-                    .extracting(PostResponse::title)
+                    .extracting(PostSummaryResponse::title)
                     .containsExactly(
                             "DDD 전술적 설계 패턴",
                             "캐시 전략 정리",
                             "테스트 코드 작성 전략"
                     );
-        }
-    }
-
-    @Nested
-    @DisplayName("좋아요 상태 조회")
-    class PostLikeSearch {
-
-        @Test
-        @DisplayName("좋아요를 누른 회원으로 조회하면 isLikedByMe=true이다")
-        void 좋아요_누른_회원으로_조회하면_isLikedByMe는_true이다() {
-            // given - setUp에서 memberId=1L이 post1("Spring 입문 가이드")에 좋아요를 눌렀다
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    1L, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isTrue();
-        }
-
-        @Test
-        @DisplayName("좋아요를 누르지 않은 회원으로 조회하면 isLikedByMe=false이다")
-        void 좋아요_안_누른_회원으로_조회하면_isLikedByMe는_false이다() {
-            // given - memberId=3L은 setUp에서 어떤 게시글에도 좋아요를 누르지 않았다
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    3L, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
-        }
-
-        @Test
-        @DisplayName("로그인하지 않은 상태(memberId=null)로 조회하면 isLikedByMe=false이다")
-        void 비로그인_조회시_isLikedByMe는_false이다() {
-            // given
-            PostSearchCondition condition = new PostSearchCondition(
-                    "Spring 입문 가이드", null, null, null, null
-            );
-
-            // when
-            Page<PostResponse> results = queryService.searchPostByCondition(
-                    null, condition, PageRequest.of(0, 10));
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.getContent().get(0).isLikedByMe()).isFalse();
         }
     }
 
@@ -854,7 +799,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
             long elapsedMs = System.currentTimeMillis() - startTime;
 
             // then
-            String key = ViewCountRedisKeys.getViewCountKey(postId);
+            String key = ViewCountRedisKeyGenerator.generateViewCountKey(postId);
             String rawCount = stringRedisTemplate.opsForValue().get(key);
             assertThat(rawCount).as("Redis 조회수 키가 존재해야 한다").isNotNull();
 
@@ -910,7 +855,7 @@ class PostIntegrationTest extends IntegrationTestSupport {
                     total, uniqueUsers, requestsPerUser, sec, tps);
 
             // then
-            String key = ViewCountRedisKeys.getViewCountKey(postId);
+            String key = ViewCountRedisKeyGenerator.generateViewCountKey(postId);
             String rawCount = stringRedisTemplate.opsForValue().get(key);
             assertThat(rawCount).as("Redis 조회수 키가 존재해야 한다").isNotNull();
 
