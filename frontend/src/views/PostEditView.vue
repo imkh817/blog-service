@@ -22,6 +22,9 @@ const slugAutoGen = ref(false)  // false: don't auto-generate slug on edit
 const scheduledAt = ref('')
 const featuredImagePreview  = ref('')
 const featuredImageInputRef = ref(null)
+const featuredImageUrl      = ref('')
+const thumbnailUploading    = ref(false)
+const postStatus            = ref('')
 
 // ── Editor mode ────────────────────────────────────────────────────────────
 const editorMode = ref('write')
@@ -69,9 +72,12 @@ async function fetchPost() {
   try {
     const res  = await postApi.getById(route.params.id)
     const post = res.data.data
-    title.value   = post.title
-    content.value = post.content
-    tags.value    = post.tags || []
+    title.value                = post.title
+    content.value              = post.content
+    tags.value                 = post.tags || []
+    featuredImageUrl.value     = post.thumbnailUrl || ''
+    featuredImagePreview.value = post.thumbnailUrl || ''
+    postStatus.value           = post.postStatus
     // initialise dirty tracking only after load
     setTimeout(() => { isDirty.value = false }, 0)
   } finally {
@@ -83,28 +89,30 @@ async function fetchPost() {
 async function saveChanges() {
   if (!title.value.trim()) { error.value = '제목을 입력하세요.'; return }
   saveStatus.value = 'saving'
+  error.value = ''
   try {
     const resolvedContent = await editorRef.value?.resolveImages(content.value) ?? content.value
-    await postApi.update(auth.user?.id, {
+    await postApi.saveDraft({
       postId: Number(route.params.id),
       title: title.value,
-      content: resolvedContent,
-      postStatus: 'DRAFT',
-      tagNames: tags.value,
+      content: resolvedContent || undefined,
+      tagNames: tags.value.length ? tags.value : undefined,
+      thumbnailUrl: featuredImageUrl.value || undefined,
     })
-    isDirty.value     = false
-    lastSavedAt.value = new Date()
-    saveStatus.value  = 'saved'
-  } catch {
+    isDirty.value = false
+    router.push({ name: 'MyPage', query: { tab: 'DRAFT' } })
+  } catch (e) {
     saveStatus.value = 'idle'
+    error.value = e.response?.data?.message || '임시저장에 실패했습니다.'
   }
 }
 
 // ── Publish update ─────────────────────────────────────────────────────────
 async function publish() {
-  if (!title.value.trim())     { error.value = '제목을 입력하세요.';          return }
-  if (!content.value.trim())   { error.value = '내용을 입력하세요.';          return }
-  if (tags.value.length === 0) { error.value = '태그를 최소 1개 입력하세요.'; return }
+  if (!title.value.trim())           { error.value = '제목을 입력하세요.';          return }
+  if (!content.value.trim())         { error.value = '내용을 입력하세요.';          return }
+  if (tags.value.length === 0)       { error.value = '태그를 최소 1개 입력하세요.'; return }
+  if (!featuredImageUrl.value.trim()) { error.value = '대표 이미지를 선택하세요.';  return }
 
   error.value   = ''
   submitting.value = true
@@ -117,6 +125,7 @@ async function publish() {
       content: resolvedContent,
       postStatus,
       tagNames: tags.value,
+      thumbnailUrl: featuredImageUrl.value,
     })
     isDirty.value = false
     router.push({ name: 'PostDetail', params: { id: route.params.id } })
@@ -142,18 +151,37 @@ function removeTag(index) {
 }
 function handleTagKeydown(e) {
   if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addTag() }
-  if (e.key === 'Backspace' && !tagInput.value && tags.value.length > 0) {
-    removeTag(tags.value.length - 1)
+}
+
+// ── Featured image (Presigned URL → S3 직접 업로드) ───────────────────────
+async function handleFeaturedImage(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  featuredImagePreview.value = URL.createObjectURL(file)
+  thumbnailUploading.value   = true
+
+  try {
+    const { data } = await postApi.getPresignedUrl(file.name, file.type, 'thumbnail')
+    const { presignedUrl, imageUrl } = data.data
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+    })
+    featuredImageUrl.value = imageUrl
+  } catch {
+    featuredImagePreview.value = ''
+    featuredImageUrl.value     = ''
+    error.value = '썸네일 업로드에 실패했습니다. 다시 시도해주세요.'
+    if (featuredImageInputRef.value) featuredImageInputRef.value.value = ''
+  } finally {
+    thumbnailUploading.value = false
   }
 }
 
-// ── Featured image ─────────────────────────────────────────────────────────
-function handleFeaturedImage(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
-  featuredImagePreview.value = URL.createObjectURL(file)
-}
 function removeFeaturedImage() {
+  featuredImageUrl.value     = ''
   featuredImagePreview.value = ''
   if (featuredImageInputRef.value) featuredImageInputRef.value.value = ''
 }
@@ -181,20 +209,13 @@ onBeforeRouteLeave(() => {
   if (isDirty.value) { showExitDialog.value = true; return false }
 })
 
-// ── Autosave ───────────────────────────────────────────────────────────────
-let autosaveTimer = null
-
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 onMounted(() => {
   fetchPost()
   window.addEventListener('beforeunload', handleBeforeUnload)
-  autosaveTimer = setInterval(() => {
-    if (isDirty.value && title.value.trim()) saveChanges()
-  }, 3000)
 })
 onUnmounted(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
-  clearInterval(autosaveTimer)
 })
 </script>
 
@@ -253,17 +274,25 @@ onUnmounted(() => {
 
         <div class="w-px h-5 bg-gray-200" />
 
-        <button
-          @click="saveChanges"
-          :disabled="submitting || saveStatus === 'saving'"
-          class="px-3.5 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 cursor-pointer transition-colors"
-        >임시저장</button>
-
-        <button
-          @click="publish"
-          :disabled="submitting"
-          class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors"
-        >수정 완료</button>
+        <template v-if="postStatus === 'DRAFT'">
+          <button
+            @click="saveChanges"
+            :disabled="submitting || saveStatus === 'saving'"
+            class="px-3.5 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 cursor-pointer transition-colors"
+          >임시저장</button>
+          <button
+            @click="publish"
+            :disabled="submitting"
+            class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors"
+          >출간하기</button>
+        </template>
+        <template v-else>
+          <button
+            @click="publish"
+            :disabled="submitting"
+            class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors"
+          >수정 완료</button>
+        </template>
       </div>
     </header>
 
@@ -369,8 +398,15 @@ onUnmounted(() => {
         <section class="px-5 py-4 border-b border-gray-100">
           <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">대표 이미지</h3>
           <div v-if="featuredImagePreview" class="relative rounded-lg overflow-hidden border border-gray-200">
-            <img :src="featuredImagePreview" alt="" class="w-full h-32 object-cover" />
+            <img :src="featuredImagePreview" alt="" class="w-full h-32 object-cover" :class="thumbnailUploading ? 'opacity-50' : ''" />
+            <div v-if="thumbnailUploading" class="absolute inset-0 flex items-center justify-center bg-black/20">
+              <svg class="w-6 h-6 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </div>
             <button
+              v-if="!thumbnailUploading"
               @click="removeFeaturedImage"
               class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-base leading-none cursor-pointer transition-colors"
             >&times;</button>
@@ -385,33 +421,6 @@ onUnmounted(() => {
             <span class="text-xs text-gray-400">클릭하여 업로드</span>
             <input ref="featuredImageInputRef" type="file" accept="image/*" class="hidden" @change="handleFeaturedImage" />
           </label>
-        </section>
-
-        <!-- Excerpt -->
-        <section class="px-5 py-4 border-b border-gray-100">
-          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">요약</h3>
-          <textarea
-            v-model="excerpt"
-            placeholder="포스트에 대한 짧은 설명 (선택)"
-            maxlength="300"
-            rows="3"
-            class="w-full text-xs text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 transition-all leading-relaxed"
-          />
-          <p class="mt-1 text-[11px] text-gray-400 text-right">{{ excerpt.length }}/300</p>
-        </section>
-
-        <!-- Slug -->
-        <section class="px-5 py-4 border-b border-gray-100">
-          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">URL 슬러그</h3>
-          <div class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus-within:ring-1 focus-within:ring-blue-300 focus-within:border-blue-300 transition-all">
-            <span class="text-[11px] text-gray-400 shrink-0 font-mono">/@/</span>
-            <input
-              v-model="slug"
-              @input="slugAutoGen = false"
-              placeholder="url-slug"
-              class="flex-1 text-xs font-mono text-gray-700 placeholder-gray-300 bg-transparent outline-none min-w-0"
-            />
-          </div>
         </section>
 
         <!-- Scheduled publishing -->

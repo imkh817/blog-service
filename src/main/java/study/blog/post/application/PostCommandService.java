@@ -7,6 +7,7 @@ import study.blog.post.domain.entity.Post;
 import study.blog.post.domain.exception.PostNotFoundException;
 import study.blog.post.infrastructure.persistence.command.PostCommandRepository;
 import study.blog.post.presentation.requset.CreatePostRequest;
+import study.blog.post.presentation.requset.SaveDraftRequest;
 import study.blog.post.presentation.requset.UpdatePostRequest;
 import study.blog.post.presentation.response.PostSaveResponse;
 import study.blog.post.presentation.response.PostStatusUpdateResponse;
@@ -39,6 +40,24 @@ public class PostCommandService {
     }
 
     /**
+     * 게시글을 임시저장한다.
+     *
+     * postId가 없으면 신규 생성, 있으면 기존 임시저장 게시글을 수정한다.
+     * 제목만 필수이며 내용, 태그, 썸네일은 선택이다.
+     */
+    public PostSaveResponse saveDraft(Long authorId, SaveDraftRequest request) {
+        if (request.postId() == null) {
+            Post post = Post.createDraft(authorId, request.title(), request.content(), request.tagNames(), request.thumbnailUrl());
+            return PostSaveResponse.from(commandRepository.save(post));
+        }
+
+        Post post = commandRepository.findById(request.postId())
+                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+        post.updateDraft(request.title(), request.content(), request.tagNames(), request.thumbnailUrl());
+        return PostSaveResponse.from(post);
+    }
+
+    /**
      * 게시글을 수정한다.
      *
      * tag 및 image 수정 필요
@@ -50,7 +69,9 @@ public class PostCommandService {
         findPost.modifyPost(
                 updatePostRequest.title(),
                 updatePostRequest.content(),
-                updatePostRequest.tagNames()
+                updatePostRequest.postStatus(),
+                updatePostRequest.tagNames(),
+                updatePostRequest.thumbnailUrl()
         );
 
         return PostSaveResponse.from(findPost);

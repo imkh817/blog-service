@@ -66,16 +66,53 @@ public class Post extends BaseEntity {
         return post;
     }
 
-    public void modifyPost(String title, String content, List<String> tags){
+    public static Post createDraft(Long authorId, String title, String content, List<String> tagNames, String thumbnailUrl) {
+        validateTitle(title);
+
+        Post post = new Post();
+        post.authorId = authorId;
+        post.title = title;
+        post.content = content;
+        post.postStatus = PostStatus.DRAFT;
+        post.thumbnailUrl = thumbnailUrl;
+        post.viewCount = 0L;
+        post.likeCount = 0L;
+        if (tagNames != null && !tagNames.isEmpty()) post.addTags(tagNames);
+        return post;
+    }
+
+    public void updateDraft(String title, String content, List<String> tagNames, String thumbnailUrl) {
+        validateModifiable();
+        validateTitle(title);
+
+        this.title = title;
+        if (hasText(content)) this.content = content;
+        if (hasText(thumbnailUrl)) this.thumbnailUrl = thumbnailUrl;
+        if (tagNames != null && !tagNames.isEmpty()) modifyTags(tagNames);
+        this.postStatus = PostStatus.DRAFT;
+    }
+
+    public void modifyPost(String title, String content, PostStatus postStatus, List<String> tags, String thumbnailUrl){
         validateModifiable();
         validateTitle(title);
         validateContent(content);
         validateTagNames(tags);
+        validatePostStatusForModify(postStatus);
 
         this.title = title;
         this.content = content;
+        this.postStatus = postStatus;
+        if (hasText(thumbnailUrl)) this.thumbnailUrl = thumbnailUrl;
         modifyTags(tags);
+    }
 
+    private static void validatePostStatusForModify(PostStatus postStatus) {
+        if (postStatus == null) {
+            throw new InValidPostStatusException("게시글 상태는 필수입니다.");
+        }
+        if (postStatus == PostStatus.DELETED) {
+            throw new InValidPostStatusException("수정 시 삭제 상태로 변경할 수 없습니다.");
+        }
     }
 
     private void modifyTags(List<String> tags){
@@ -160,12 +197,8 @@ public class Post extends BaseEntity {
      * 게시글이 HIDDEN 또는 DRAFT 상태일 때만 PUBLISH 가능
      */
     private void validatePostStatusToPublish(PostStatus status){
-        if(status.equals(PostStatus.PUBLISHED)){
-            throw new InValidPostStatusException("이미 발행 상태인 게시글입니다.");
-        }
-
-        if(!(status.equals(PostStatus.HIDDEN) || status.equals(PostStatus.DRAFT))){
-            throw new InValidPostStatusException("게시할 수 없는 상태입니다.");
+        if(PostStatus.DELETED.equals(status)){
+            throw new InValidPostStatusException("삭제된 게시물은 다시 발행할 수 없습니다.");
         }
     }
 

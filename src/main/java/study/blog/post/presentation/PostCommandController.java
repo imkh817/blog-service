@@ -8,6 +8,7 @@ import study.blog.global.common.dto.ApiResponse;
 import study.blog.global.web.resolver.LoginMember;
 import study.blog.post.application.PostCommandService;
 import study.blog.post.presentation.requset.CreatePostRequest;
+import study.blog.post.presentation.requset.SaveDraftRequest;
 import study.blog.post.presentation.requset.UpdatePostRequest;
 import study.blog.post.presentation.response.PostSaveResponse;
 import study.blog.post.presentation.response.PostStatusUpdateResponse;
@@ -31,6 +32,19 @@ public class PostCommandController {
                                                     @RequestBody @Valid CreatePostRequest createPostRequest) {
         PostSaveResponse post = commandService.createPost(memberId, createPostRequest);
         return ApiResponse.success(post);
+    }
+
+    /**
+     * 게시글을 임시저장한다.
+     *
+     * postId가 없으면 신규 생성, 있으면 기존 임시저장 게시글을 수정한다.
+     */
+    @PostMapping("/draft")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<PostSaveResponse> saveDraft(@LoginMember Long memberId,
+                                                   @RequestBody @Valid SaveDraftRequest request) {
+        PostSaveResponse response = commandService.saveDraft(memberId, request);
+        return ApiResponse.success(response);
     }
 
     /**

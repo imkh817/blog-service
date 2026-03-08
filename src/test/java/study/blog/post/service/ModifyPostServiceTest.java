@@ -60,7 +60,9 @@ class ModifyPostServiceTest {
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
-                List.of("Mac", "Window")
+                PostStatus.DRAFT,
+                List.of("Mac", "Window"),
+                null
         );
 
         when(postCommandRepository.findById(any(Long.class))).thenReturn(Optional.of(existingPost));
@@ -86,7 +88,9 @@ class ModifyPostServiceTest {
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
-                List.of("Mac", "Window")
+                PostStatus.DRAFT,
+                List.of("Mac", "Window"),
+                null
         );
 
         existingPost.delete();
@@ -106,7 +110,9 @@ class ModifyPostServiceTest {
                 postId,
                 "테스트 제목(수정)",
                 "테스트 본문(수정)",
-                List.of("Mac", "Window")
+                PostStatus.DRAFT,
+                List.of("Mac", "Window"),
+                null
         );
 
         when(postCommandRepository.findById(any(Long.class))).thenReturn(Optional.empty());

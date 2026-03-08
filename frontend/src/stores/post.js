@@ -8,6 +8,19 @@ export const usePostStore = defineStore('post', () => {
   const totalPages = ref(0)
   const loading = ref(false)
 
+  async function fetchList(params = {}) {
+    loading.value = true
+    try {
+      const res = await postApi.getList(params)
+      posts.value = res.data.data
+      const totalCount = parseInt(res.headers['x-total-count'] || '0')
+      const size = params.size || 10
+      totalPages.value = Math.ceil(totalCount / size)
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function fetchPosts(params = {}) {
     loading.value = true
     try {
@@ -32,5 +45,5 @@ export const usePostStore = defineStore('post', () => {
     }
   }
 
-  return { posts, currentPost, totalPages, loading, fetchPosts, fetchPost }
+  return { posts, currentPost, totalPages, loading, fetchList, fetchPosts, fetchPost }
 })

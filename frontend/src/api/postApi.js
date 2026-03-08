@@ -1,6 +1,10 @@
 import api from './index'
 
 export const postApi = {
+  getPresignedUrl(fileName, contentType, imageType) {
+    return api.post('/images/presigned-url', { fileName, contentType, imageType })
+  },
+
   create(memberId, data) {
     return api.post(`/posts?memberId=${memberId}`, data)
   },
@@ -13,8 +17,20 @@ export const postApi = {
     return api.get(`/posts/${postId}`)
   },
 
-  search(params) {
+  getList(params) {
     return api.get('/posts', { params })
+  },
+
+  search(params) {
+    return api.get('/posts/search', { params })
+  },
+
+  saveDraft(data) {
+    return api.post('/posts/draft', data)
+  },
+
+  getMyPosts(params) {
+    return api.get('/posts/my', { params })
   },
 
   publish(postId) {
@@ -27,5 +43,13 @@ export const postApi = {
 
   delete(postId) {
     return api.post(`/posts/${postId}/delete`)
+  },
+
+  like(postId) {
+    return api.post(`/posts/${postId}/likes`)
+  },
+
+  unlike(postId) {
+    return api.delete(`/posts/${postId}/likes`)
   },
 }

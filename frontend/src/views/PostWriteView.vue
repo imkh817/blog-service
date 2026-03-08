@@ -21,6 +21,8 @@ const slugAutoGen = ref(true)
 const scheduledAt = ref('')
 const featuredImagePreview  = ref('')
 const featuredImageInputRef = ref(null)
+const featuredImageUrl      = ref('')     // S3에 업로드 완료된 썸네일 URL
+const thumbnailUploading    = ref(false)  // 썸네일 S3 업로드 진행 중 여부
 
 // ── Editor mode ────────────────────────────────────────────────────────────
 const editorMode = ref('write')  // 'write' | 'preview' | 'split'
@@ -73,36 +75,35 @@ watch(title, (val) => {
 watch(content, () => { isDirty.value = true })
 watch(tags, () => { isDirty.value = true }, { deep: true })
 
-// ── Autosave (every 3 s) ───────────────────────────────────────────────────
-let autosaveTimer = null
+function buildRequestBody(resolvedContent, postStatus) {
+  return {
+    title: title.value,
+    content: resolvedContent,
+    postStatus,
+    tagNames: tags.value,
+    thumbnailUrl: featuredImageUrl.value,
+  }
+}
 
 async function saveDraft() {
-  if (!title.value.trim()) return
+  if (!title.value.trim()) { error.value = '제목을 입력하세요.'; return }
+
   saveStatus.value = 'saving'
+  error.value = ''
   try {
     const resolvedContent = await editorRef.value?.resolveImages(content.value) ?? content.value
-    if (postId.value) {
-      await postApi.update(auth.user?.id, {
-        postId: postId.value,
-        title: title.value,
-        content: resolvedContent,
-        postStatus: 'DRAFT',
-        tagNames: tags.value,
-      })
-    } else {
-      const res = await postApi.create(auth.user?.id, {
-        title: title.value,
-        content: resolvedContent,
-        postStatus: 'DRAFT',
-        tagNames: tags.value,
-      })
-      postId.value = res.data.data.postId
-    }
-    isDirty.value   = false
-    lastSavedAt.value = new Date()
-    saveStatus.value  = 'saved'
-  } catch {
+    const res = await postApi.saveDraft({
+      postId: postId.value || undefined,
+      title: title.value,
+      content: resolvedContent || undefined,
+      tagNames: tags.value.length ? tags.value : undefined,
+      thumbnailUrl: featuredImageUrl.value || undefined,
+    })
+    isDirty.value = false
+    router.push({ name: 'MyPage', query: { tab: 'DRAFT' } })
+  } catch (e) {
     saveStatus.value = 'idle'
+    error.value = e.response?.data?.message || '임시저장에 실패했습니다.'
   }
 }
 
@@ -111,8 +112,9 @@ async function publish() {
   if (!title.value.trim())      { error.value = '제목을 입력하세요.';          return }
   if (!content.value.trim())    { error.value = '내용을 입력하세요.';          return }
   if (tags.value.length === 0)  { error.value = '태그를 최소 1개 입력하세요.'; return }
+  if (!postId.value && !featuredImageUrl.value) { error.value = '대표 이미지를 선택하세요.'; return }
 
-  error.value   = ''
+  error.value      = ''
   submitting.value = true
   try {
     const resolvedContent = await editorRef.value?.resolveImages(content.value) ?? content.value
@@ -123,16 +125,11 @@ async function publish() {
         postId: postId.value,
         title: title.value,
         content: resolvedContent,
-        postStatus,
+        postStatus: postStatus,
         tagNames: tags.value,
       })
     } else {
-      const res = await postApi.create(auth.user?.id, {
-        title: title.value,
-        content: resolvedContent,
-        postStatus,
-        tagNames: tags.value,
-      })
+      const res = await postApi.create(auth.user?.id, buildRequestBody(resolvedContent, postStatus))
       postId.value = res.data.data.postId
     }
     isDirty.value = false
@@ -161,19 +158,38 @@ function removeTag(index) {
 
 function handleTagKeydown(e) {
   if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addTag() }
-  if (e.key === 'Backspace' && !tagInput.value && tags.value.length > 0) {
-    removeTag(tags.value.length - 1)
+}
+
+// ── Featured image (Presigned URL → S3 직접 업로드) ───────────────────────
+async function handleFeaturedImage(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  // 즉시 미리보기 표시
+  featuredImagePreview.value = URL.createObjectURL(file)
+  thumbnailUploading.value   = true
+
+  try {
+    const { data } = await postApi.getPresignedUrl(file.name, file.type, 'thumbnail')
+    const { presignedUrl, imageUrl } = data.data
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+    })
+    featuredImageUrl.value = imageUrl
+  } catch {
+    featuredImagePreview.value = ''
+    featuredImageUrl.value     = ''
+    error.value = '썸네일 업로드에 실패했습니다. 다시 시도해주세요.'
+    if (featuredImageInputRef.value) featuredImageInputRef.value.value = ''
+  } finally {
+    thumbnailUploading.value = false
   }
 }
 
-// ── Featured image ─────────────────────────────────────────────────────────
-function handleFeaturedImage(e) {
-  const file = e.target.files?.[0]
-  if (!file) return
-  featuredImagePreview.value = URL.createObjectURL(file)
-}
-
 function removeFeaturedImage() {
+  featuredImageUrl.value     = ''
   featuredImagePreview.value = ''
   if (featuredImageInputRef.value) featuredImageInputRef.value.value = ''
 }
@@ -214,14 +230,10 @@ onBeforeRouteLeave(() => {
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload)
-  autosaveTimer = setInterval(() => {
-    if (isDirty.value && title.value.trim()) saveDraft()
-  }, 3000)
 })
 
 onUnmounted(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
-  clearInterval(autosaveTimer)
 })
 </script>
 
@@ -287,14 +299,14 @@ onUnmounted(() => {
         <!-- Save Draft -->
         <button
           @click="saveDraft"
-          :disabled="submitting || saveStatus === 'saving'"
+          :disabled="submitting || saveStatus === 'saving' || thumbnailUploading"
           class="px-3.5 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-40 cursor-pointer transition-colors"
         >임시저장</button>
 
         <!-- Publish -->
         <button
           @click="publish"
-          :disabled="submitting"
+          :disabled="submitting || thumbnailUploading"
           class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors"
         >출간하기</button>
       </div>
@@ -398,10 +410,18 @@ onUnmounted(() => {
 
         <!-- Featured Image ──────────────────────────────────────────────── -->
         <section class="px-5 py-4 border-b border-gray-100">
-          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">대표 이미지</h3>
+          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">대표 이미지 <span class="text-red-400">*</span></h3>
           <div v-if="featuredImagePreview" class="relative rounded-lg overflow-hidden border border-gray-200">
-            <img :src="featuredImagePreview" alt="" class="w-full h-32 object-cover" />
+            <img :src="featuredImagePreview" alt="" class="w-full h-32 object-cover" :class="thumbnailUploading ? 'opacity-50' : ''" />
+            <!-- 업로드 중 스피너 -->
+            <div v-if="thumbnailUploading" class="absolute inset-0 flex items-center justify-center bg-black/20">
+              <svg class="w-6 h-6 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </div>
             <button
+              v-if="!thumbnailUploading"
               @click="removeFeaturedImage"
               class="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center text-base leading-none cursor-pointer transition-colors"
             >&times;</button>
@@ -422,33 +442,6 @@ onUnmounted(() => {
               @change="handleFeaturedImage"
             />
           </label>
-        </section>
-
-        <!-- Excerpt ────────────────────────────────────────────────────── -->
-        <section class="px-5 py-4 border-b border-gray-100">
-          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">요약</h3>
-          <textarea
-            v-model="excerpt"
-            placeholder="포스트에 대한 짧은 설명 (선택)"
-            maxlength="300"
-            rows="3"
-            class="w-full text-xs text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-300 transition-all leading-relaxed"
-          />
-          <p class="mt-1 text-[11px] text-gray-400 text-right">{{ excerpt.length }}/300</p>
-        </section>
-
-        <!-- Slug ───────────────────────────────────────────────────────── -->
-        <section class="px-5 py-4 border-b border-gray-100">
-          <h3 class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-3">URL 슬러그</h3>
-          <div class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus-within:ring-1 focus-within:ring-blue-300 focus-within:border-blue-300 transition-all">
-            <span class="text-[11px] text-gray-400 shrink-0 font-mono">/@/</span>
-            <input
-              v-model="slug"
-              @input="slugAutoGen = false"
-              placeholder="url-slug"
-              class="flex-1 text-xs font-mono text-gray-700 placeholder-gray-300 bg-transparent outline-none min-w-0"
-            />
-          </div>
         </section>
 
         <!-- Scheduled publishing ───────────────────────────────────────── -->

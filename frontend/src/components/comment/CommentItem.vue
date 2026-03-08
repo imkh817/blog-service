@@ -31,9 +31,6 @@ function avatarStyle(authorId) {
   return { background: `linear-gradient(135deg, ${from}, ${to})` }
 }
 
-function avatarLetter(authorId) {
-  return String.fromCharCode(65 + (authorId % 26))
-}
 
 function handleReply(content) {
   emit('reply', { parentId: props.comment.commentId, content })
@@ -52,9 +49,9 @@ function formatDate(dateStr) {
     <!-- Comment header -->
     <div class="comment-header">
       <div class="comment-author">
-        <div class="comment-avatar" :style="avatarStyle(comment.authorId)">{{ avatarLetter(comment.authorId) }}</div>
+        <div class="comment-avatar" :style="avatarStyle(comment.authorId)">{{ (comment.authorNickname || '익명').charAt(0).toUpperCase() }}</div>
         <div>
-          <span class="author-name">사용자 {{ comment.authorId }}</span>
+          <span class="author-name">{{ comment.authorNickname || '익명' }}</span>
           <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
         </div>
       </div>

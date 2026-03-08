@@ -1,22 +1,24 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { usePostStore } from '../stores/post'
 import BlogHeader from '../components/common/BlogHeader.vue'
 import PostCard from '../components/post/PostCard.vue'
 import Pagination from '../components/common/Pagination.vue'
 
+const route     = useRoute()
 const postStore = usePostStore()
 
 const currentPage   = ref(1)
-const selectedTag   = ref('')
-const searchKeyword = ref('')
+const selectedTag   = ref(route.query.tag || '')
+const searchKeyword = ref(route.query.keyword || '')
 const showAllTags   = ref(false)
 const sortType      = ref('createdAt,desc')
 
 const SORT_OPTIONS = [
-  { label: 'Latest',      value: 'createdAt,desc' },
-  { label: 'Most Viewed', value: 'viewCount,desc'  },
-  { label: 'Most Liked',  value: 'likeCount,desc'  },
+  { label: '최신순',      value: 'createdAt,desc' },
+  { label: '조회순', value: 'viewCount,desc'  },
+  { label: '좋아요순',  value: 'likeCount,desc'  },
 ]
 
 const allTags = computed(() => {
@@ -37,14 +39,19 @@ const visibleTags = computed(() =>
 
 async function loadPosts() {
   const params = {
-    postStatuses: 'PUBLISHED',
     page: currentPage.value - 1,
     size: 9,
     sort: sortType.value,
   }
-  if (selectedTag.value)   params.tagNames = selectedTag.value
-  if (searchKeyword.value) params.keyword  = searchKeyword.value
-  await postStore.fetchPosts(params)
+
+  if (searchKeyword.value || selectedTag.value) {
+    if (searchKeyword.value) params.keyword  = searchKeyword.value
+    if (selectedTag.value)   params.tagNames = selectedTag.value
+    params.postStatuses = 'PUBLISHED'
+    await postStore.fetchPosts(params)
+  } else {
+    await postStore.fetchList(params)
+  }
 }
 
 function selectTag(tag) {
@@ -64,6 +71,13 @@ function setSort(value) {
   currentPage.value = 1
 }
 
+function resetHome() {
+  selectedTag.value   = ''
+  searchKeyword.value = ''
+  currentPage.value   = 1
+  sortType.value      = 'createdAt,desc'
+}
+
 watch([currentPage, selectedTag, searchKeyword, sortType], loadPosts)
 onMounted(loadPosts)
 </script>
@@ -76,6 +90,7 @@ onMounted(loadPosts)
       :tags="allTags"
       @search="handleSearch"
       @tag-select="selectTag"
+      @home-click="resetHome"
     />
 
     <!-- ── 히어로 ── -->

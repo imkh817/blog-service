@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { renderMarkdown } from '../../utils/markdown'
+import { postApi } from '../../api/postApi'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -11,7 +12,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const textareaRef = ref(null)
 const fileInputRef = ref(null)
-const imageMap = new Map()
 
 const preview = computed(() => renderMarkdown(props.modelValue))
 
@@ -77,31 +77,30 @@ function insertCodeBlock() {
   setTimeout(() => { el.focus(); el.setSelectionRange(start + 4, start + 4) }, 0)
 }
 
-// ── Image upload ───────────────────────────────────────────────────────────
-function handleImageUpload(e) {
+// ── Image upload (Presigned URL → S3 직접 업로드) ─────────────────────────
+async function handleImageUpload(e) {
   const file = e.target.files?.[0]
   if (!file) return
-  const blobUrl = URL.createObjectURL(file)
-  imageMap.set(blobUrl, file)
-  const altText = file.name.replace(/\.[^/.]+$/, '')
-  insert(`![${altText}](${blobUrl})`)
-  e.target.value = ''
+  try {
+    const { data } = await postApi.getPresignedUrl(file.name, file.type, 'post-image')
+    const { presignedUrl, imageUrl } = data.data
+    await fetch(presignedUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+    })
+    const altText = file.name.replace(/\.[^/.]+$/, '')
+    insert(`![${altText}](${imageUrl})`)
+  } catch {
+    // 업로드 실패 시 조용히 무시 (에러 피드백은 필요에 따라 추가)
+  } finally {
+    e.target.value = ''
+  }
 }
 
-// ── Resolve blob URLs → base64 before saving ──────────────────────────────
+// 이미지가 이미 S3 URL로 삽입되므로 별도 변환이 필요 없다
 async function resolveImages(content) {
-  let resolved = content
-  for (const [blobUrl, file] of imageMap.entries()) {
-    if (!resolved.includes(blobUrl)) continue
-    const base64 = await new Promise((res, rej) => {
-      const reader = new FileReader()
-      reader.onload = (ev) => res(ev.target.result)
-      reader.onerror = rej
-      reader.readAsDataURL(file)
-    })
-    resolved = resolved.replaceAll(blobUrl, base64)
-  }
-  return resolved
+  return content
 }
 
 defineExpose({ resolveImages })

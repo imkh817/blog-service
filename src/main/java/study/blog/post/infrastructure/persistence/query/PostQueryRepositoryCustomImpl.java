@@ -61,6 +61,7 @@ public class PostQueryRepositoryCustomImpl implements PostQueryRepositoryCustom 
                 .select(post)
                 .from(post)
                 .where(
+                        keywordLike(condition.keyword()),
                         authorEq(memberId),
                         postStatusIn(condition.postStatuses())
                 )
@@ -79,6 +80,7 @@ public class PostQueryRepositoryCustomImpl implements PostQueryRepositoryCustom 
                         .select(post.count())
                         .from(post)
                         .where(
+                                keywordLike(condition.keyword()),
                                 authorEq(memberId),
                                 postStatusIn(condition.postStatuses())
                         ).fetchOne(),

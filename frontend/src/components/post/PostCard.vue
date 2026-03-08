@@ -22,7 +22,13 @@ const coverStyle = computed(() => {
   return { background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }
 })
 
-const category = computed(() => props.post.tags?.[0] ?? null)
+const tags = computed(() => props.post.tags ?? [])
+
+const cardLink = computed(() =>
+  props.post.postStatus === 'DRAFT'
+    ? { name: 'PostEdit', params: { id: props.post.postId } }
+    : { name: 'PostDetail', params: { id: props.post.postId } }
+)
 
 const formattedDate = computed(() => {
   if (!props.post.createdAt) return ''
@@ -33,20 +39,30 @@ const formattedDate = computed(() => {
 
 <template>
   <router-link
-    :to="{ name: 'PostDetail', params: { id: post.postId } }"
+    :to="cardLink"
     class="post-card"
   >
     <!-- 커버 이미지 -->
-    <div class="post-card__cover" :style="coverStyle">
-      <span class="post-card__cover-letter">
-        {{ post.title?.charAt(0)?.toUpperCase() || 'B' }}
-      </span>
+    <div class="post-card__cover">
+      <img
+        v-if="post.thumbnailUrl"
+        :src="post.thumbnailUrl"
+        :alt="post.title"
+        class="post-card__cover-img"
+      />
+      <div v-else class="post-card__cover-fallback" :style="coverStyle">
+        <span class="post-card__cover-letter">
+          {{ post.title?.charAt(0)?.toUpperCase() || 'B' }}
+        </span>
+      </div>
     </div>
 
     <!-- 바디 -->
     <div class="post-card__body">
-      <!-- 카테고리 (첫 번째 태그) -->
-      <p v-if="category" class="post-card__category">{{ category }}</p>
+      <!-- 태그 목록 -->
+      <div v-if="tags.length" class="post-card__tags">
+        <span v-for="tag in tags" :key="tag" class="post-card__tag">{{ tag }}</span>
+      </div>
 
       <!-- 제목 -->
       <h2 class="post-card__title">{{ post.title }}</h2>
@@ -70,7 +86,7 @@ const formattedDate = computed(() => {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          {{ post.commentCount ?? 0 }}
+          {{ post.commentCounts ?? 0 }}
         </span>
       </div>
     </div>
@@ -96,10 +112,24 @@ const formattedDate = computed(() => {
 .post-card__cover {
   width: 100%;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.post-card__cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.post-card:hover .post-card__cover-img {
+  transform: scale(1.04);
+}
+.post-card__cover-fallback {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 .post-card__cover-letter {
   font-size: 3.5rem;
@@ -117,13 +147,20 @@ const formattedDate = computed(() => {
   gap: 6px;
 }
 
-/* 카테고리 */
-.post-card__category {
+/* 태그 */
+.post-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   margin: 0;
-  font-size: 0.75rem;
+}
+.post-card__tag {
+  font-size: 0.72rem;
   font-weight: 600;
   color: #0d9488;
-  text-transform: lowercase;
+  background: #f0fdf4;
+  border-radius: 4px;
+  padding: 1px 6px;
 }
 
 /* 제목 */

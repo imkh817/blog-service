@@ -7,7 +7,7 @@ import NotificationBell from './NotificationBell.vue'
 const props = defineProps({
   tags: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['search', 'tag-select'])
+const emit = defineEmits(['search', 'tag-select', 'home-click'])
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -16,6 +16,11 @@ const showDropdown = ref(false)
 const showSearch   = ref(false)
 const searchQuery  = ref('')
 const searchInput  = ref(null)
+
+function handleHomeClick() {
+  router.push('/')
+  emit('home-click')
+}
 
 function toggleSearch() {
   showSearch.value = !showSearch.value
@@ -58,7 +63,7 @@ watch(showDropdown, (val) => {
     <div class="header-inner">
 
       <!-- 로고 -->
-      <router-link to="/" class="brand">blog</router-link>
+      <a class="brand" href="/" @click.prevent="handleHomeClick">blog</a>
 
       <!-- 우측 액션 -->
       <div class="header-actions">
