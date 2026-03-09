@@ -43,8 +43,6 @@ public PostLikeResponse likePost(Long postId, Long memberId) {
 
 ## 😱 코드를 다 작성하고 나서 떠오른 경험
 
----
-
 기능 구현을 마치고 테스트를 하던 중, 회사에서 겪었던 일이 떠올랐다.
 
 당시 운영 중이던 기능에서 사용자는 버튼을 한 번 눌렀다고 인식했는데,
@@ -64,8 +62,6 @@ public PostLikeResponse likePost(Long postId, Long memberId) {
 지금 내가 만든 좋아요 기능도, 이런 상황이 충분히 발생할 수 있겠다는 생각이 들었다.
 
 ## 🚀 그래서 실제로 재현해봤다
-
----
 
 그래서 실제 내가 작성한 좋아요 기능도 동일하게 문제가 발생할지 JMeter로 테스트를 진행해봤다.
 
@@ -103,8 +99,6 @@ JVM 결과
 
 ## 🤔 해결방법
 
----
-
 동시성의 경우 DB 단에서 처리되니, 서비스단은 예외를 처리할 수 있게 변경하였다.
 
 ```java
@@ -124,8 +118,6 @@ public PostLikeResponse likePost(Long postId, Long memberId) {
 중복 요청이 와도 DB는 1건만 허용하고, API는 개발자가 예측 가능한 응답을 반환하게 수정하였다.
 
 ## 📝 정리
-
----
 
 앞서 말했듯이 이 문제를 처음 겪은 건 개인 프로젝트가 아니라 회사 업무였다.
 
