@@ -1,7 +1,5 @@
 ## 🏃 조회 수 시스템 구현
 
----
-
 현재 프로젝트에서 조회 수는 Redis에 먼저 누적하고 일정 주기마다 DB로 반영하는 구조로 구현했다.
 
 ```
@@ -45,8 +43,6 @@ public void flushViewCountToDB(){
 
 ## 👋 동시성 테스트 해보기
 
----
-
 flush 로직이 제대로 동작하는지 확인하기 위해 테스트 코드를 작성했다.
 
 특히 flush 작업과 조회 요청이 동시에 발생하는 상황을 가정했다.
@@ -89,8 +85,6 @@ void 조회수가_DB에_정상적으로_FLUSH_된다() throws Exception {
 
 ## 😱 예상치 못한 결과
 
----
-
 테스트 결과 Redis에 남아있어야 할 조회수 증가가 사라지는 상황을 확인했다.
 
 동작 순서를 보면 다음과 같다.
@@ -112,29 +106,23 @@ DB에는 +10만 반영
 
 ## 👀 이유가 뭘까?
 
----
-
 문제의 원인은 `GET`과 `DEL`이 서로 다른 명령어이며 원자적 연산이 이루어지지 않았기 때문에 이 두 명령 사이에는 다른 요청이 끼어들 수 있게 되어 동시성 환경에서 조회수가 유실된 것이다.
 
 ## 🙆‍♂️ 해결 방법
 
----
-
 Redis 공식문서를 확인해보니, 값 조회와 삭제를 원자적으로 연산할 수 있는 `GETDEL` 명령어가 있었다.
 
-<div style="border:1px solid #d0d7de; border-radius:10px; padding:16px;">
-<b>GETDEL</b><br>
-Returns the string value of a key after deleting the key.<br><br>
-<a href="https://redis.io/docs/latest/commands/getdel/">문서 보기</a>
-</div>
+> **GETDEL**
+>
+> Returns the string value of a key after deleting the key.
+>
+> 📄 https://redis.io/docs/latest/commands/getdel/
 
-<br>
-
-<div style="border:1px solid #d0d7de; border-radius:10px; padding:16px;">
-<b>ValueOperations (Spring Data Redis 4.0.3 API)</b><br>
-Returns the string value of a key after deleting the key.<br><br>
-<a href="https://docs.spring.io/spring-data/redis/docs/current/api/org/springframework/data/redis/core/ValueOperations.html">문서 보기</a>
-</div>
+> **ValueOperations (Spring Data Redis)**
+>
+> Returns the string value of a key after deleting the key.
+>
+> 📄 https://docs.spring.io/spring-data/redis/docs/current/api/org/springframework/data/redis/core/ValueOperations.html
 
 
 그래서 flush 로직을 다음과 같이 수정했다.
