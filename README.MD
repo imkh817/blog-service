@@ -1,13 +1,11 @@
-# Blog - 블로그
+# Blog Platform - Spring Boot 기반 백엔드 블로그 서비스
 
----
 > 조회수·좋아요 동시성 문제와 실시간 알림 기능을 구현한 백엔드 중심 프로젝트
 
 <br>
 
 # 핵심 설계 및 문제 해결 기록
 
----
 ## 아키텍처 & 설계
 - [Post - Comment간 연관관계 제거 및 Aggregate를 분리한 이유](docs/post-comment-decoupling.md)
 - [동적 정렬 구현 방식의 선택과 이유](docs/dynamic-sort-design.md)
