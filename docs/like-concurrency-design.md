@@ -9,11 +9,12 @@ UI는 일반적인 형태로 구현했다.
 
 좋아요(PostLike)의 경우 게시글(Post)과 다른 Aggregate로 분리했으며, 그 이유는 이전에 적었던 포스팅 내용과 같다.
 
-[Post - Comment간 연관관계 제거 및 Aggregate를 분리한 이유 | Notion](https://tidy-cereal-e5f.notion.site/Post-Comment-Aggregate-303b7e777c0380449cdbef50d84689c2?source=copy_link)
-<div style="border:1px solid #d0d7de; border-radius:10px; padding:16px;">
-<b>Post - Comment간 연관관계 제거 및 Aggregate를 분리한 이유</b><br>
-<a href="https://tidy-cereal-e5f.notion.site/Post-Comment-Aggregate-303b7e777c0380449cdbef50d84689c2?source=copy_link">문서 보기</a>
-</div>
+> ### Post - Comment간 연관관계 제거 및 Aggregate를 분리한 이유
+>
+> Post와 Comment를 하나의 애그리거트로 묶지 않고  
+> 연관관계를 제거해 애그리거트 경계를 분리한 설계 이유를 정리했습니다.
+>
+> 👉 [문서 보기](docs/post-comment-decoupling.md)
 
 좋아요 테이블에는 다음과 같이 유니크 제약조건을 걸어두었다.
 
