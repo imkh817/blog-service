@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { postApi } from '../api/postApi'
+import { subscriptionApi } from '../api/subscriptionApi'
 import BlogHeader from '../components/common/BlogHeader.vue'
 import PostContent from '../components/post/PostContent.vue'
 import PostStatusBadge from '../components/post/PostStatusBadge.vue'
@@ -21,6 +22,9 @@ const likeCount    = ref(0)
 const commentCount = ref(0)
 const likeLoading       = ref(false)
 const showDeleteDialog  = ref(false)
+const subscribed            = ref(false)
+const subscribeLoading      = ref(false)
+const showUnsubscribeDialog = ref(false)
 
 const isAuthor = () => auth.user?.id === post.value?.authorId
 
@@ -45,6 +49,7 @@ async function fetchPost() {
     likeCount.value    = post.value.likeCount ?? 0
     liked.value        = post.value.isLikedByMe ?? false
     commentCount.value = post.value.commentCounts ?? 0
+    subscribed.value   = post.value.isSubscribe ?? false
   } finally {
     loading.value = false
   }
@@ -97,6 +102,41 @@ function handleDelete() {
 async function confirmDelete() {
   await postApi.delete(post.value.postId)
   router.back()
+}
+
+async function handleSubscribe() {
+  if (!auth.isLoggedIn) {
+    router.push({ name: 'Login' })
+    return
+  }
+  if (subscribeLoading.value) return
+
+  // 구독 중이면 해제 팝업 표시
+  if (subscribed.value) {
+    showUnsubscribeDialog.value = true
+    return
+  }
+
+  subscribeLoading.value = true
+  try {
+    await subscriptionApi.subscribe(post.value.authorId)
+    subscribed.value = true
+  } catch {
+    subscribed.value = true
+  } finally {
+    subscribeLoading.value = false
+  }
+}
+
+async function confirmUnsubscribe() {
+  showUnsubscribeDialog.value = false
+  subscribeLoading.value = true
+  try {
+    await subscriptionApi.unsubscribe(post.value.authorId)
+    subscribed.value = false
+  } catch { /* 무시 */ } finally {
+    subscribeLoading.value = false
+  }
 }
 
 function handleShare() {
@@ -156,13 +196,19 @@ watch(() => route.params.id, async (newId) => {
 
               <div class="author-divider"></div>
 
-              <!-- 구독 버튼 -->
-              <button class="action-subscribe">
+              <!-- 구독 버튼: 자신의 글에선 숨김 -->
+              <button
+                v-if="!isAuthor()"
+                class="action-subscribe"
+                :class="{ subscribed }"
+                :disabled="subscribeLoading"
+                @click="handleSubscribe"
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                구독하기
+                {{ subscribed ? '구독 중' : '구독하기' }}
               </button>
             </div>
           </aside>
@@ -290,6 +336,31 @@ watch(() => route.params.id, async (newId) => {
     </div>
 
   </div>
+
+  <!-- 구독 해제 확인 다이얼로그 -->
+  <Teleport to="body">
+    <div
+      v-if="showUnsubscribeDialog"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      style="backdrop-filter: blur(2px)"
+      @click.self="showUnsubscribeDialog = false"
+    >
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6">
+        <h2 class="text-sm font-semibold text-gray-900 mb-1">구독을 해제하시겠어요?</h2>
+        <p class="text-xs text-gray-500 leading-relaxed">{{ post?.authorNickname }}님의 새 글 알림을 받을 수 없게 됩니다.</p>
+        <div class="flex gap-2 mt-5">
+          <button
+            @click="showUnsubscribeDialog = false"
+            class="flex-1 px-4 py-2 text-xs font-medium border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+          >취소</button>
+          <button
+            @click="confirmUnsubscribe"
+            class="flex-1 px-4 py-2 text-xs font-semibold bg-gray-800 text-white rounded-lg hover:bg-gray-900 cursor-pointer transition-colors"
+          >구독 해제</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 
   <!-- 삭제 확인 다이얼로그 -->
   <Teleport to="body">
@@ -448,6 +519,11 @@ watch(() => route.params.id, async (newId) => {
 }
 .action-subscribe svg { width: 15px; height: 15px; flex-shrink: 0; }
 .action-subscribe:hover { opacity: 0.88; }
+.action-subscribe.subscribed {
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: default;
+}
 
 /* 반응 바 (좋아요 + 공유) */
 .post-reactions {

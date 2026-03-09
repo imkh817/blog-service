@@ -1,22 +1,16 @@
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationStore } from '../../stores/notification'
 
 const router       = useRouter()
 const notifStore   = useNotificationStore()
 
-const open    = ref(false)
-const loading = ref(false)
+const open = ref(false)
 
 // ── Open / close ──────────────────────────────────────────────────────────
-async function toggle() {
+function toggle() {
   open.value = !open.value
-  if (open.value) {
-    loading.value = true
-    await notifStore.fetchNotifications(0, 5)
-    loading.value = false
-  }
 }
 
 function close() {
@@ -49,10 +43,7 @@ watch(open, (val) => {
   else     document.removeEventListener('click', onOutside)
 })
 
-// ── Polling lifecycle ─────────────────────────────────────────────────────
-onMounted(() => notifStore.startPolling())
 onBeforeUnmount(() => {
-  notifStore.stopPolling()
   document.removeEventListener('click', onOutside)
 })
 
@@ -107,16 +98,8 @@ watch(() => notifStore.unreadCount, (n) => {
           </button>
         </div>
 
-        <!-- Loading -->
-        <div v-if="loading" class="nb-state">
-          <svg class="nb-spin" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="nb-spin-track"/>
-            <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="nb-spin-arc"/>
-          </svg>
-        </div>
-
         <!-- Empty -->
-        <div v-else-if="!notifStore.notifications.length" class="nb-state">
+        <div v-if="!notifStore.notifications.filter(n => !n.isRead).length" class="nb-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="nb-empty-icon">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-linecap="round" stroke-linejoin="round"/>
@@ -127,7 +110,7 @@ watch(() => notifStore.unreadCount, (n) => {
         <!-- List -->
         <ul v-else class="nb-list">
           <li
-            v-for="n in notifStore.notifications"
+            v-for="n in notifStore.notifications.filter(n => !n.isRead)"
             :key="n.id"
             class="nb-item"
             :class="{ 'nb-item--unread': !n.isRead }"

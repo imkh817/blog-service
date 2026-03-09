@@ -26,6 +26,7 @@ import study.blog.global.security.filter.JwtExceptionHandlerFilter;
 import study.blog.global.security.handler.CustomAccessDeniedHandler;
 import study.blog.global.security.handler.CustomAuthenticationEntryPoint;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.http.HttpMethod;
 import study.blog.auth.repository.TokenBlacklistRepository;
 import study.blog.global.security.jwt.JwtTokenProvider;
@@ -53,6 +54,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests((authorize) -> authorize
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/members").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()

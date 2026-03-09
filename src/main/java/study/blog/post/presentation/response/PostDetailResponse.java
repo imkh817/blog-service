@@ -18,10 +18,11 @@ public record PostDetailResponse(
         List<String> tags,
         long likeCount,
         boolean isLikedByMe,
+        boolean isSubscribe,
         long commentCounts,
         LocalDateTime createdAt
 ) {
-    public static PostDetailResponse from(Post post, String authorNickname, boolean isLikedByMe, long commentCounts) {
+    public static PostDetailResponse from(Post post, String authorNickname, boolean isLikedByMe, long commentCounts, boolean isSubscribe) {
         return new PostDetailResponse(
                 post.getId(),
                 post.getAuthorId(),
@@ -36,6 +37,7 @@ public record PostDetailResponse(
                         .toList(),
                 post.getLikeCount(),
                 isLikedByMe,
+                isSubscribe,
                 commentCounts,
                 post.getCreatedAt()
         );

@@ -33,12 +33,12 @@ public class MemberReader {
     }
 
     /**
-     * 글 작성자 닉네임을 조회한다.
-     * @param authorId 게시글 작성자 ID
-     * @return 작성자 닉네임
+     * 닉네임을 조회한다.
+     * @param memberId 사용자 ID
+     * @return 사용자 닉네임
      */
-    public String getAuthorNickName(Long authorId) {
-        return memberRepository.findById(authorId)
+    public String getNickName(Long memberId) {
+        return memberRepository.findById(memberId)
                 .map(Member::getNickname)
                 .orElse("익명");
     }

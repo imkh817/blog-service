@@ -24,9 +24,6 @@ public class CommentReader {
         if(postIds.isEmpty()){
             return Map.of();
         }
-
-
-
         return queryRepository.countCommentByPostIds(postIds);
     }
 

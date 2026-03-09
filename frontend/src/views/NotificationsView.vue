@@ -3,66 +3,67 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BlogHeader from '../components/common/BlogHeader.vue'
 import { useNotificationStore } from '../stores/notification'
+import { notificationApi } from '../api/notificationApi'
 
 const router     = useRouter()
 const notifStore = useNotificationStore()
 
-const filter      = ref('all')  // 'all' | 'unread'
-const pageSize    = 15
-let   currentPage = 0
+const items   = ref([])
+const loading = ref(false)
+const filter  = ref('all')  // 'all' | 'unread'
 
 // ── Filtered list ─────────────────────────────────────────────────────────
 const filtered = computed(() =>
   filter.value === 'unread'
-    ? notifStore.notifications.filter(n => !n.isRead)
-    : notifStore.notifications
+    ? items.value.filter(n => !n.isRead)
+    : items.value
 )
 
 // ── Date grouping ─────────────────────────────────────────────────────────
-const today    = new Date(); today.setHours(0, 0, 0, 0)
-const weekAgo  = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7)
+const today   = new Date(); today.setHours(0, 0, 0, 0)
+const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7)
 
 const groups = computed(() => {
-  const todayItems  = []
-  const weekItems   = []
-  const olderItems  = []
+  const todayItems = []
+  const weekItems  = []
+  const olderItems = []
 
   for (const n of filtered.value) {
     const d = new Date(n.createdAt)
-    if (d >= today)   todayItems.push(n)
+    if (d >= today)        todayItems.push(n)
     else if (d >= weekAgo) weekItems.push(n)
-    else olderItems.push(n)
+    else                   olderItems.push(n)
   }
 
   return [
-    { label: '오늘',    items: todayItems  },
-    { label: '이번 주', items: weekItems   },
-    { label: '이전',    items: olderItems  },
+    { label: '오늘',    items: todayItems },
+    { label: '이번 주', items: weekItems  },
+    { label: '이전',    items: olderItems },
   ].filter(g => g.items.length > 0)
 })
 
-// ── Load / paginate ───────────────────────────────────────────────────────
-async function load(page = 0) {
-  currentPage = page
-  await notifStore.fetchNotifications(page, pageSize)
+// ── Load ──────────────────────────────────────────────────────────────────
+async function load() {
+  loading.value = true
+  try {
+    const res = await notificationApi.getAll()
+    items.value = res.data.data ?? []
+  } finally {
+    loading.value = false
+  }
 }
-
-async function loadMore() {
-  await load(currentPage + 1)
-}
-
-const hasMore = computed(() =>
-  currentPage + 1 < notifStore.totalPages && filter.value === 'all'
-)
 
 // ── Actions ───────────────────────────────────────────────────────────────
 async function markAll() {
   await notifStore.markAllAsRead()
+  items.value.forEach(n => { n.isRead = true })
 }
 
 async function handleItem(n) {
-  if (!n.isRead) notifStore.markAsRead(n.id)
-  if (n.postId) router.push({ name: 'PostDetail', params: { id: n.postId } })
+  if (!n.isRead) {
+    await notifStore.markAsRead(n.id)
+    n.isRead = true
+  }
 }
 
 function handleSearch(keyword) {
@@ -92,7 +93,7 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-onMounted(() => load(0))
+onMounted(() => load())
 </script>
 
 <template>
@@ -110,7 +111,7 @@ onMounted(() => load(0))
           </span>
         </div>
         <button
-          v-if="notifStore.unreadCount"
+          v-if="items.some(n => !n.isRead)"
           class="mark-all-btn"
           @click="markAll"
         >
@@ -139,7 +140,7 @@ onMounted(() => load(0))
       </div>
 
       <!-- ── Loading (initial) ── -->
-      <div v-if="notifStore.loading && notifStore.notifications.length === 0" class="loading-wrap">
+      <div v-if="loading" class="loading-wrap">
         <div class="loading-dots"><span/><span/><span/></div>
       </div>
 
@@ -211,16 +212,6 @@ onMounted(() => load(0))
           </div>
         </section>
 
-        <!-- Load more -->
-        <div v-if="hasMore" class="load-more-wrap">
-          <button class="load-more-btn" :disabled="notifStore.loading" @click="loadMore">
-            <svg v-if="notifStore.loading" class="loading-spin" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" style="opacity:.2"/>
-              <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-            {{ notifStore.loading ? '불러오는 중...' : '더 보기' }}
-          </button>
-        </div>
       </template>
 
     </div>

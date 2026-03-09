@@ -1,16 +1,13 @@
 import api from './index'
 
 export const notificationApi = {
-  getAll(params) {
-    return api.get('/notifications', { params })
+  getUnread() {
+    return api.get('/notifications/unread')
   },
-  getUnreadCount() {
-    return api.get('/notifications/unread-count')
+  getAll() {
+    return api.get('/notifications')
   },
   markAsRead(id) {
     return api.patch(`/notifications/${id}/read`)
-  },
-  markAllAsRead() {
-    return api.patch('/notifications/read-all')
   },
 }

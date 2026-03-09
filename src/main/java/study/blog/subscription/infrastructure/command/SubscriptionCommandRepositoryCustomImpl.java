@@ -1,0 +1,4 @@
+package study.blog.subscription.infrastructure.command;
+
+public class SubscriptionCommandRepositoryCustomImpl implements SubscriptionCommandRepositoryCustom{
+}

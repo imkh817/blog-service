@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.blog.comment.infrastructure.persistence.query.CommentReader;
+import study.blog.subscription.infrastructure.persistence.query.SubscriptionReader;
 import study.blog.postlike.infrastructure.persistence.query.PostLikeReader;
 import study.blog.member.repository.MemberReader;
 import study.blog.post.domain.entity.Post;
@@ -30,6 +31,7 @@ public class PostQueryService {
     private final PostLikeReader postLikeReader;
     private final CommentReader commentReader;
     private final MemberReader memberReader;
+    private final SubscriptionReader subscriptionReader;
 
     /**
      * 게시글 목록 조회 (메인 화면 정렬순)
@@ -97,7 +99,7 @@ public class PostQueryService {
         long total = queryRepository.countMemberPosts(memberId, condition);
 
         List<Long> postIds = posts.stream().map(Post::getId).toList();
-        String authorNickname = memberReader.getAuthorNickName(memberId);
+        String authorNickname = memberReader.getNickName(memberId);
         Map<Long, Long> commentCounts = commentReader.getCommentCounts(postIds);
 
         List<PostSummaryResponse> content = posts.stream()
@@ -130,9 +132,11 @@ public class PostQueryService {
 
         boolean isLikedByMe = memberId != null && postLikeReader.hasLiked(memberId, postId);
         long commentCount = commentReader.getCommentCount(postId);
-        String authorNickname = memberReader.getAuthorNickName(post.getAuthorId());
+        String authorNickname = memberReader.getNickName(post.getAuthorId());
+        boolean isSubscribe = memberId != null ? subscriptionReader.isSubscribe(memberId, post.getAuthorId()) : false;
 
         viewTracker.track(postId, memberId, request);
-        return PostDetailResponse.from(post, authorNickname, isLikedByMe, commentCount);
+
+        return PostDetailResponse.from(post, authorNickname, isLikedByMe, commentCount, isSubscribe);
     }
 }

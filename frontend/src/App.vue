@@ -1,10 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppHeader from './components/common/AppHeader.vue'
 import AppFooter from './components/common/AppFooter.vue'
+import { useAuthStore } from './stores/auth'
+import { useNotificationStore } from './stores/notification'
 
-const route = useRoute()
+const route      = useRoute()
+const auth       = useAuthStore()
+const notifStore = useNotificationStore()
+
+// 로그인 상태가 바뀔 때 SSE 연결/해제
+watch(
+  () => auth.isLoggedIn,
+  (loggedIn) => {
+    if (loggedIn) notifStore.connectSse(auth.token)
+    else          notifStore.disconnectSse()
+  },
+  { immediate: true }
+)
 
 // 에디터/인증 라우트: 헤더/푸터 완전 제거
 const isEditorRoute = computed(() =>
