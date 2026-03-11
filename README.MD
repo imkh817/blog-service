@@ -25,6 +25,8 @@
 
 ### 트러블 슈팅
 - [Redis 기반 조회수 처리 중 조회수가 사라진 문제 분석](docs/redis-view-count-loss-issue.md)
+- [Spring Security 필터 체인에서 예외가 잡히지 않는 문제 해결기](docs/spring-security-filter-exception-handling.md)
+- [익명 사용자의 AccessDeniedException이 AccessDeniedHandler로 가지 않는 이유가 뭘까](docs/spring-security-anonymous-access-denied-handler.md)
 
 ## 기술 스택
 
