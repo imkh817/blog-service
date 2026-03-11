@@ -20,7 +20,7 @@
 ### 동시성 및 이벤트 처리
 - [중복 요청을 전제로 설계한 좋아요 기능](docs/like-concurrency-design.md)
 - [조회수 이벤트를 비동기로 처리할 때 스레드 풀을 설정한 기준](docs/view-count-event-threadpool.md)
-- [SSE 기반 실시간 알림과 트랜잭션 커밋 타이밍 문제 해결]()
+- [SSE 기반 실시간 알림과 트랜잭션 커밋 타이밍 문제 해결](docs/sse-notification-transaction-commit-timing-issue.md)
 
 ### 인증 및 보안
 - [Refresh Token Rotation과 블랙리스트 전략을 도입한 이유](docs/refresh-token-rotation-blacklist.md)
