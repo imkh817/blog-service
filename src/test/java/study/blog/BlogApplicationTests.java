@@ -1,10 +1,9 @@
 package study.blog;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import study.blog.global.IntegrationTestSupport;
 
-@SpringBootTest
-class BlogApplicationTests {
+class BlogApplicationTests extends IntegrationTestSupport {
 
 	@Test
 	void contextLoads() {

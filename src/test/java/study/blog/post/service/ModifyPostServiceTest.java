@@ -136,15 +136,17 @@ class ModifyPostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 발행 - 이미 발행된 게시글은 다시 발행할 수 없다")
+    @DisplayName("게시글 발행 - 이미 발행된 게시글도 발행 요청 시 PUBLISHED 상태를 유지한다")
     void changeStatusToPublish_alreadyPublished() {
         // given
         existingPost.publish();
         when(postCommandRepository.findById(postId)).thenReturn(Optional.of(existingPost));
 
-        // when, then
-        assertThatThrownBy(() -> postCommandService.changeStatusToPublish(postId))
-                .isInstanceOf(InValidPostStatusException.class);
+        // when
+        postCommandService.changeStatusToPublish(postId);
+
+        // then
+        assertThat(existingPost.getPostStatus()).isEqualTo(PostStatus.PUBLISHED);
     }
 
     @Test

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import study.blog.global.IntegrationTestSupport;
 import study.blog.postlike.application.PostLikeCommandService;
 import study.blog.post.application.PostQueryService;
@@ -30,6 +32,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static study.blog.post.domain.PostStatus.*;
 
+@Sql(
+        statements = "DELETE FROM post_like",
+        executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
+        config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
+)
 class PostIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
