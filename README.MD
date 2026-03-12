@@ -44,4 +44,4 @@
 
 ## 아키텍처
 
-![architecture.jpg](docs/image/architecture.jpg)![아키텍처](docs/image/)
+![architecture.jpg](docs/image/architecture.jpg)
