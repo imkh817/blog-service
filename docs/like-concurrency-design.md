@@ -14,7 +14,7 @@ UI는 일반적인 형태로 구현했다.
 > Post와 Comment를 하나의 애그리거트로 묶지 않고  
 > 연관관계를 제거해 애그리거트 경계를 분리한 설계 이유를 정리했습니다.
 >
-> 👉 [문서 보기](docs/post-comment-decoupling.md)
+> 👉 [문서 보기](/docs/post-comment-decoupling.md)
 
 좋아요 테이블에는 다음과 같이 유니크 제약조건을 걸어두었다.
 

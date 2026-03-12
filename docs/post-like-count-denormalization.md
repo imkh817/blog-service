@@ -5,7 +5,7 @@
 > Redis를 활용해 좋아요 카운트를 캐싱하고  
 > DB 업데이트 비용을 줄인 과정 정리
 >
-> 👉 [문서 보기](docs/post-like-count-denormalization.md)
+> 👉 [문서 보기](/docs/post-like-count-denormalization.md)
 
 
 이전 포스팅에서 좋아요 N+1 문제를 Redis로 해결한 과정을 정리했다.
