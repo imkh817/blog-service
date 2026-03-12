@@ -1,0 +1,13 @@
+.git
+.gradle
+build
+.idea
+*.iws
+*.iml
+*.ipr
+frontend
+docs
+mysql/data
+redis/data
+.env
+.env.example

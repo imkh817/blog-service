@@ -39,5 +39,8 @@ out/
 
 CLAUDE.md
 application.yaml
+application-local.yaml
+application-prod.yaml
 mysql/data/
 *.class
+.env
