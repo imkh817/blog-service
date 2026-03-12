@@ -41,3 +41,7 @@
 | **Infra** | AWS S3, Docker Compose |
 | **Frontend** | Vue.js 3, Pinia, TailwindCSS |
 | **Test** | JUnit 5, Testcontainers |
+
+## 아키텍처
+
+![architecture.jpg](docs/image/architecture.jpg)![아키텍처](docs/image/)
