@@ -10,7 +10,7 @@ import study.blog.subscription.domain.event.SubscribedEvent;
 public class SubscriptionTracker {
     private final ApplicationEventPublisher publisher;
 
-    public void track(Long subscriberId, Long targetId){
+    public void track(Long subscriberId, Long targetId) {
         publisher.publishEvent(new SubscribedEvent(subscriberId, targetId));
     }
 }
