@@ -68,6 +68,9 @@ dependencies {
 	implementation platform("software.amazon.awssdk:bom:2.25.61")
 	implementation "software.amazon.awssdk:s3"
 	implementation "net.coobird:thumbnailator:0.4.20"
+
+	// [jsoup - OG 메타데이터 파싱 (북마크 링크 미리보기)]
+	implementation 'org.jsoup:jsoup:1.17.2'
 }
 
 tasks.named('test') {

@@ -41,6 +41,24 @@ const formattedDate = computed(() => {
 
 const toc = computed(() => extractToc(post.value?.content || ''))
 
+function setOgMeta(post) {
+  const setMeta = (property, content) => {
+    if (!content) return
+    let el = document.querySelector(`meta[property="${property}"]`)
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute('property', property)
+      document.head.appendChild(el)
+    }
+    el.setAttribute('content', content)
+  }
+  document.title = post.title
+  setMeta('og:title', post.title)
+  setMeta('og:description', post.content?.replace(/[#*`>\-\n]/g, ' ').slice(0, 150))
+  setMeta('og:image', post.thumbnailUrl)
+  setMeta('og:url', window.location.href)
+}
+
 async function fetchPost() {
   loading.value = true
   try {
@@ -50,6 +68,7 @@ async function fetchPost() {
     liked.value        = post.value.isLikedByMe ?? false
     commentCount.value = post.value.commentCounts ?? 0
     subscribed.value   = post.value.isSubscribe ?? false
+    setOgMeta(post.value)
   } finally {
     loading.value = false
   }

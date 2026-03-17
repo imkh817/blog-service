@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { renderMarkdown } from '../../utils/markdown'
+import { ref, nextTick } from 'vue'
 import { postApi } from '../../api/postApi'
+import PostContent from './PostContent.vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -12,8 +12,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const textareaRef = ref(null)
 const fileInputRef = ref(null)
-
-const preview = computed(() => renderMarkdown(props.modelValue))
 
 // ── Input handler ──────────────────────────────────────────────────────────
 function handleInput(e) {
@@ -105,6 +103,24 @@ async function resolveImages(content) {
 
 defineExpose({ resolveImages })
 
+// ── Bookmark modal ─────────────────────────────────────────────────────────
+const bookmarkModalOpen = ref(false)
+const bookmarkUrl = ref('')
+const bookmarkInputRef = ref(null)
+
+function openBookmarkModal() {
+  bookmarkModalOpen.value = true
+  nextTick(() => bookmarkInputRef.value?.focus())
+}
+
+function insertBookmark() {
+  const url = bookmarkUrl.value.trim()
+  if (!url) return
+  insert(`\n:::bookmark\n${url}\n:::\n`)
+  bookmarkUrl.value = ''
+  bookmarkModalOpen.value = false
+}
+
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 function handleKeydown(e) {
   if (e.ctrlKey || e.metaKey) {
@@ -140,7 +156,8 @@ const toolbarGroups = [
   ],
   // Media
   [
-    { type: 'icon', icon: 'image', title: '이미지 업로드', action: () => fileInputRef.value.click() },
+    { type: 'icon', icon: 'image',    title: '이미지 업로드', action: () => fileInputRef.value.click() },
+    { type: 'icon', icon: 'bookmark', title: '북마크',       action: openBookmarkModal },
   ],
 ]
 </script>
@@ -199,6 +216,9 @@ const toolbarGroups = [
               <circle cx="8.5" cy="8.5" r="1.5" stroke-width="2"/>
               <polyline points="21 15 16 10 5 21" stroke-width="2"/>
             </svg>
+            <svg v-else-if="item.icon === 'bookmark'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
           </button>
 
           <!-- Tooltip -->
@@ -214,6 +234,35 @@ const toolbarGroups = [
 
     <!-- Hidden file input -->
     <input ref="fileInputRef" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+
+    <!-- ── Bookmark URL 입력 모달 ──────────────────────────────────────── -->
+    <Teleport to="body">
+      <div v-if="bookmarkModalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" @click="bookmarkModalOpen = false" />
+        <div class="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+          <h3 class="text-base font-semibold text-gray-900 mb-3">북마크 URL 입력</h3>
+          <input
+            ref="bookmarkInputRef"
+            v-model="bookmarkUrl"
+            type="url"
+            placeholder="https://example.com"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            @keydown.enter="insertBookmark"
+            @keydown.esc="bookmarkModalOpen = false"
+          />
+          <div class="flex gap-2 mt-4 justify-end">
+            <button
+              @click="bookmarkModalOpen = false"
+              class="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+            >취소</button>
+            <button
+              @click="insertBookmark"
+              class="px-4 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg cursor-pointer"
+            >삽입</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- ── Editor / Preview area ──────────────────────────────────────── -->
     <div class="flex gap-6">
@@ -234,7 +283,7 @@ const toolbarGroups = [
 
       <!-- Preview column -->
       <div v-show="mode !== 'write'" :class="mode === 'split' ? 'w-1/2' : 'w-full'">
-        <div v-if="modelValue" class="prose max-w-none" v-html="preview" />
+        <PostContent v-if="modelValue" :content="modelValue" />
         <p v-else class="text-sm text-gray-300 pt-1">내용을 입력하면 여기서 미리볼 수 있습니다.</p>
       </div>
     </div>
