@@ -135,7 +135,7 @@ public class PostQueryService {
         String authorNickname = memberReader.getNickName(post.getAuthorId());
         boolean isSubscribe = memberId != null ? subscriptionReader.isSubscribe(memberId, post.getAuthorId()) : false;
 
-        viewTracker.track(postId, memberId, request);
+        viewTracker.track(memberId, postId, request);
 
         return PostDetailResponse.from(post, authorNickname, isLikedByMe, commentCount, isSubscribe);
     }

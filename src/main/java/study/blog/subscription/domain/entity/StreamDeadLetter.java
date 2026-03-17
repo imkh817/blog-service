@@ -12,7 +12,6 @@ import static lombok.AccessLevel.PROTECTED;
 
 /**
  * PEL 재처리 최대 횟수를 초과한 메시지를 보관하는 Dead Letter 테이블.
- * 운영자가 확인 후 수동으로 재처리하거나 폐기할 수 있다.
  */
 @Getter
 @Entity

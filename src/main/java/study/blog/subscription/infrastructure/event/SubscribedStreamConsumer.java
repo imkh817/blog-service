@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class SubscribedStreamConsumer implements StreamListener<String, MapRecord<String, String, String>> {
 
     static final String CONSUMER_GROUP = "subscription-notification-group";
-    private static final String CONSUMER_NAME = "notification-consumer" + UUID.randomUUID();
+    private static final String CONSUMER_NAME = "notification-consumer";
     private static final Duration MIN_IDLE_TIME = Duration.ofMinutes(5);
     private static final int MAX_RETRY_COUNT = 3;
 
@@ -41,7 +41,8 @@ public class SubscribedStreamConsumer implements StreamListener<String, MapRecor
         try {
             Long subscriberId = Long.valueOf(message.getValue().get("subscriberId"));
             Long targetId = Long.valueOf(message.getValue().get("targetId"));
-            processor.process(subscriberId, targetId);
+            String messageId = message.getId().getValue();
+            processor.process(subscriberId, targetId, messageId);
             ack(message.getId());
         } catch (Exception e) {
             log.error("구독 스트림 메시지 처리 실패 - messageId={}", message.getId(), e);
@@ -57,6 +58,11 @@ public class SubscribedStreamConsumer implements StreamListener<String, MapRecor
      */
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
     public void reclaimPendingMessages() {
+        var summary = redisTemplate.opsForStream()
+                .pending(SubscribedStreamPublisher.STREAM_KEY, CONSUMER_GROUP);
+
+        if (summary == null || summary.getTotalPendingMessages() == 0) return;
+
         List<MapRecord<String, Object, Object>> pendingMessages = redisTemplate.opsForStream()
                 .claim(SubscribedStreamPublisher.STREAM_KEY,
                         CONSUMER_GROUP,
@@ -83,7 +89,8 @@ public class SubscribedStreamConsumer implements StreamListener<String, MapRecor
         try {
             Long subscriberId = Long.valueOf((String) message.getValue().get("subscriberId"));
             Long targetId = Long.valueOf((String) message.getValue().get("targetId"));
-            processor.process(subscriberId, targetId);
+            String messageId = message.getId().getValue();
+            processor.process(subscriberId, targetId, messageId);
             ack(message.getId());
             log.info("PEL 재처리 성공 - messageId={}, deliveryCount={}", message.getId(), deliveryCount);
         } catch (Exception e) {

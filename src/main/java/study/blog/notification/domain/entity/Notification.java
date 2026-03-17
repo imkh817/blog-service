@@ -30,14 +30,18 @@ public class Notification extends BaseEntity {
 
     private boolean isRead;
 
+    @Column(unique = true)
+    private String streamMessageId;
 
-    public static Notification createNotification(Long receiverId, Long senderId, NotificationType type, String actorName) {
+
+    public static Notification createNotification(Long receiverId, Long senderId, NotificationType type, String actorName, String streamMessageId) {
         Notification notification = new Notification();
         notification.receiverId = receiverId;
         notification.senderId = senderId;
         notification.type = type;
         notification.message = type.createMessage(actorName);
         notification.isRead = false;
+        notification.streamMessageId = streamMessageId;
         return notification;
     }
 

@@ -15,8 +15,8 @@ public class NotificationCommandService {
 
     private final NotificationQueryRepository notificationQueryRepository;
 
-    public NotificationResponse create(Long receiverId, Long senderId, NotificationType type, String actorName) {
-        Notification notification = Notification.createNotification(receiverId, senderId, type, actorName);
+    public NotificationResponse create(Long receiverId, Long senderId, NotificationType type, String actorName, String messageId) {
+        Notification notification = Notification.createNotification(receiverId, senderId, type, actorName, messageId);
         Notification savedNotification = notificationQueryRepository.save(notification);
         return NotificationResponse.from(savedNotification);
     }

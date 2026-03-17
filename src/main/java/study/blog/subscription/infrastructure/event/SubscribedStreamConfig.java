@@ -23,7 +23,7 @@ import java.util.UUID;
 public class SubscribedStreamConfig {
 
 
-    private static final String CONSUMER_NAME = "notification-consumer" + UUID.randomUUID();
+    private static final String CONSUMER_NAME = "notification-consumer";
 
     private final StringRedisTemplate redisTemplate;
     private final RedisConnectionFactory redisConnectionFactory;

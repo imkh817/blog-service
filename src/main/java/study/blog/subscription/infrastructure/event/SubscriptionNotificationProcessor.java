@@ -22,7 +22,7 @@ public class SubscriptionNotificationProcessor {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void process(Long subscriberId, Long targetId) {
+    public void process(Long subscriberId, Long targetId, String messageId) {
         log.info("구독 알림 처리 시작 - subscriberId={}, targetId={}", subscriberId, targetId);
 
         String subscriberNickName = memberReader.getNickName(subscriberId);
@@ -31,7 +31,8 @@ public class SubscriptionNotificationProcessor {
                 targetId,
                 subscriberId,
                 NotificationType.SUBSCRIBED,
-                subscriberNickName
+                subscriberNickName,
+                messageId
         );
 
         // AFTER_COMMIT 이벤트 — 트랜잭션 커밋 후 SSE 전송 보장
