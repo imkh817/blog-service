@@ -35,7 +35,7 @@ public class SubscriptionNotificationProcessor {
                 messageId
         );
 
-        // AFTER_COMMIT 이벤트 — 트랜잭션 커밋 후 SSE 전송 보장
+        // AFTER_COMMIT 이벤트 — 트랜잭션 커밋 후 Pub/Sub 발행 보장
         eventPublisher.publishEvent(new NotificationSseEvent(
                 notification.notificationId(),
                 notification.receiverId(),

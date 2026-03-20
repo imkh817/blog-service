@@ -9,10 +9,15 @@ const props = defineProps({
 
 const containerRef = ref(null)
 const html = computed(() => renderMarkdown(props.content))
+const previewCache = new Map()
 
-watch(html, async () => {
-  await nextTick()
-  enhanceBookmarkCards()
+let debounceTimer = null
+watch(html, () => {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(async () => {
+    await nextTick()
+    enhanceBookmarkCards()
+  }, 500)
 }, { immediate: true })
 
 async function enhanceBookmarkCards() {
@@ -21,12 +26,14 @@ async function enhanceBookmarkCards() {
 
   for (const card of cards) {
     const url = card.dataset.bookmarkUrl
-    if (!url || card.dataset.enhanced) continue
-    card.dataset.enhanced = 'true'
+    if (!url) continue
 
     try {
-      const { data } = await api.get(`/link-preview?url=${encodeURIComponent(url)}`)
-      const preview = data.data
+      if (!previewCache.has(url)) {
+        const { data } = await api.get(`/link-preview?url=${encodeURIComponent(url)}`)
+        previewCache.set(url, data.data)
+      }
+      const preview = previewCache.get(url)
 
       if (preview.title) {
         const el = card.querySelector('.bm-title')
