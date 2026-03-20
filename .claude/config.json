@@ -1,0 +1,18 @@
+{
+  "autoApprove": true,
+  "allowedCommands": [
+    "git",
+    "./gradlew",
+    "gradle",
+    "docker",
+    "docker-compose",
+    "mkdir",
+    "touch",
+    "cp",
+    "mv"
+  ],
+  "blockedCommands": [
+    "rm",
+    "sudo"
+  ]
+}
