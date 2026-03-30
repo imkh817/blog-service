@@ -52,6 +52,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException{
+        String path = request.getRequestURI();
+        return path.startsWith("/api/v1/auth/");
+    }
+
     private void sendUnauthorizedResponse(HttpServletResponse response, JwtErrorType errorType) throws IOException {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
